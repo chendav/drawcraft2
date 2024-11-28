@@ -285,35 +285,9 @@ class Battlefield {
                 
                 // 检查是否到达移动时间
                 if (currentTime - lastMoveTime >= moveInterval) {
-                    // 计算移动方向
-                    const dx = Math.sign(targetPos.x - currentPos.x);
-                    const dy = Math.sign(targetPos.y - currentPos.y);
-                    
-                    // 检查前方是否有敌人
-                    const nextX = currentPos.x + dx;
-                    const hasEnemyAhead = this.checkEnemyInPath(currentPos, {x: nextX, y: currentPos.y}, unit);
-                    
-                    if (!hasEnemyAhead) {
-                        // 优先尝试水平移动
-                        if (dx !== 0) {
-                            if (this.isValidMove(nextX, currentPos.y)) {
-                                this.grid[currentPos.y][currentPos.x] = null;
-                                this.grid[currentPos.y][nextX] = unit;
-                                this.unitLastMoveTime.set(unit, currentTime);
-                                continue;
-                            }
-                        }
-                        
-                        // 如果水平移动失败，尝试垂直移动
-                        if (dy !== 0) {
-                            const newY = currentPos.y + dy;
-                            if (this.isValidMove(currentPos.x, newY) && !this.checkEnemyInPath(currentPos, {x: currentPos.x, y: newY}, unit)) {
-                                this.grid[currentPos.y][currentPos.x] = null;
-                                this.grid[newY][currentPos.x] = unit;
-                                this.unitLastMoveTime.set(unit, currentTime);
-                            }
-                        }
-                    }
+                    // 使用 moveTowardsTarget 方法，它会根据分配的路线移动
+                    this.moveTowardsTarget(unit, currentPos, targetPos);
+                    this.unitLastMoveTime.set(unit, currentTime);
                 }
             }
         }
