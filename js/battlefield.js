@@ -53,6 +53,9 @@ class Battlefield {
         
         // 添加单位移动路线的记录
         this.unitPaths = new Map();  // 记录每个单位的移动路线
+        
+        // 添加攻击效果列表
+        this.attackEffects = [];
     }
 
     initializeBases() {
@@ -86,6 +89,9 @@ class Battlefield {
         
         // 绘制单位
         this.drawUnits();
+        
+        // 绘制攻击效果
+        this.drawAttackEffects();
     }
 
     drawUnits() {
@@ -392,6 +398,9 @@ class Battlefield {
             damage *= COUNTER_BONUS;
         }
         
+        // 创建攻击效果
+        this.createAttackEffect(attacker, target, damage);
+        
         // 应用伤害
         target.hp -= damage;
         
@@ -641,5 +650,81 @@ class Battlefield {
         }
         
         return false;
+    }
+
+    // 添加新方法：创建攻击效果
+    createAttackEffect(attacker, target, damage) {
+        const attackerPos = this.findUnitPosition(attacker);
+        const targetPos = this.findUnitPosition(target);
+        
+        if (!attackerPos || !targetPos) return;
+        
+        this.attackEffects.push({
+            startX: attackerPos.x * this.cellSize + this.cellSize/2,
+            startY: attackerPos.y * this.cellSize + this.cellSize/2,
+            endX: targetPos.x * this.cellSize + this.cellSize/2,
+            endY: targetPos.y * this.cellSize + this.cellSize/2,
+            progress: 0,
+            damage: damage,
+            startTime: Date.now()
+        });
+    }
+
+    // 添加新方法：绘制攻击效果
+    drawAttackEffects() {
+        const currentTime = Date.now();
+        const effectDuration = 500; // 效果持续500毫秒
+        
+        // 更新和绘制每个攻击效果
+        this.attackEffects = this.attackEffects.filter(effect => {
+            const elapsed = currentTime - effect.startTime;
+            effect.progress = elapsed / effectDuration;
+            
+            if (effect.progress >= 1) {
+                return false; // 移除完成的效果
+            }
+            
+            // 绘制攻击线条
+            this.ctx.save();
+            
+            // 设置线条样式
+            this.ctx.strokeStyle = 'rgba(255, 0, 0, ' + (1 - effect.progress) + ')';
+            this.ctx.lineWidth = 2;
+            
+            // 绘制攻击线
+            this.ctx.beginPath();
+            this.ctx.moveTo(effect.startX, effect.startY);
+            
+            // 使用二次贝塞尔曲线创建弧形攻击效果
+            const controlX = (effect.startX + effect.endX) / 2;
+            const controlY = Math.min(effect.startY, effect.endY) - 30;
+            
+            this.ctx.quadraticCurveTo(
+                controlX,
+                controlY,
+                effect.endX,
+                effect.endY
+            );
+            
+            this.ctx.stroke();
+            
+            // 绘制伤害数字
+            this.ctx.fillStyle = 'rgba(255, 0, 0, ' + (1 - effect.progress) + ')';
+            this.ctx.font = 'bold 16px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            
+            // 让伤害数字向上飘动
+            const textY = effect.endY - (effect.progress * 30);
+            this.ctx.fillText(
+                Math.round(effect.damage).toString(),
+                effect.endX,
+                textY
+            );
+            
+            this.ctx.restore();
+            
+            return true; // 保留未完成的效果
+        });
     }
 } 
