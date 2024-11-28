@@ -245,12 +245,12 @@ class Battlefield {
     updateUnits() {
         const currentTime = Date.now();
         
-        // 获取所有非基地单位位置和信息
+        // 获取所有单位位置和信息（包括基地）
         const units = [];
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 const unit = this.grid[y][x];
-                if (unit && unit.type !== "基地") {
+                if (unit) {  // 移除 unit.type !== "基地" 的检查，让基地也参与战斗
                     units.push({
                         unit: unit,
                         pos: {x, y}
@@ -277,15 +277,18 @@ class Battlefield {
             const nearestEnemy = this.findNearestEnemyInRange(currentPos, unit);
             
             if (nearestEnemy) {
-                // 如果有敌方单位在攻击范围内，停止移动并进行攻击
-                this.performAttack(unit, nearestEnemy.unit);
-            } else {
+                // 如果有敌方单位在攻击范围内，进行攻击
+                // 检查攻击冷却
+                if (currentTime - lastMoveTime >= moveInterval) {
+                    this.performAttack(unit, nearestEnemy.unit);
+                    this.unitLastMoveTime.set(unit, currentTime);
+                }
+            } else if (unit.type !== "基地") {  // 基地不移动
                 // 只有在攻击范围内没有敌人时才移动
                 const targetPos = unit.side === 'left' ? this.rightBasePos : this.leftBasePos;
                 
                 // 检查是否到达移动时间
                 if (currentTime - lastMoveTime >= moveInterval) {
-                    // 使用 moveTowardsTarget 方法，它会根据分配的路线移动
                     this.moveTowardsTarget(unit, currentPos, targetPos);
                     this.unitLastMoveTime.set(unit, currentTime);
                 }

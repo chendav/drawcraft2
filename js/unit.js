@@ -10,12 +10,14 @@ class Unit {
             this.attack = stats.attack;
             this.speed = stats.speed;
             this.range = stats.attack_range;
+            this.attack_speed = stats.attack_speed;
         } else {
             // 默认属性
             this.hp = 1000;
             this.attack = 20;
             this.speed = 1;
             this.range = 2;
+            this.attack_speed = 1;
         }
         
         // 初始生命值
@@ -30,42 +32,48 @@ const UNIT_STATS = {
         attack: 10,
         move_range: 0,
         attack_range: 4,
-        speed: 0
+        speed: 0,
+        attack_speed: 0.5
     },
     "士兵": {
         hp: 2000,
         attack: 10,
         move_range: 1,
         attack_range: 1,
-        speed: 0.8
+        speed: 0.8,
+        attack_speed: 0.8
     },
     "坦克": {
         hp: 3000,
         attack: 15,
         move_range: 1,
         attack_range: 2,
-        speed: 1
+        speed: 1,
+        attack_speed: 0.7
     },
     "飞机": {
         hp: 2500,
         attack: 20,
         move_range: 2,
         attack_range: 3,
-        speed: 2
+        speed: 2,
+        attack_speed: 1
     },
     "大炮": {
         hp: 1500,
         attack: 25,
         move_range: 1,
         attack_range: 10,
-        speed: 0.5
+        speed: 0.5,
+        attack_speed: 0.3
     },
     "哥斯拉": {
         hp: 5000,
         attack: 100,
         move_range: 1,
         attack_range: 2,
-        speed: 0.5
+        speed: 0.5,
+        attack_speed: 0.4
     }
 };
 
