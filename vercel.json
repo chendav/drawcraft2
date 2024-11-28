@@ -2,16 +2,22 @@
   "version": 2,
   "builds": [
     {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "**/*",
-      "use": "@vercel/static",
-      "config": {
-        "env": {
-          "OPENAI_API_KEY": "@openai_api_key"
-        }
-      }
+      "use": "@vercel/static"
     }
   ],
-  "env": {
-    "OPENAI_API_KEY": "@openai_api_key"
-  }
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
 } 

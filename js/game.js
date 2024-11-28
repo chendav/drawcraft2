@@ -25,9 +25,8 @@ class Game {
         this.leftLastClick = 0;
         this.rightLastClick = 0;
         
-        // 修改获取 API Key 的方式
-        this.apiKey = window.CONFIG?.OPENAI_API_KEY;
-        console.log('API Key available:', !!this.apiKey);  // 调试用
+        // 等待配置加载
+        this.initializeAPI();
         
         // 设置系统提示词
         this.systemPrompt = `
@@ -43,6 +42,23 @@ class Game {
         
         // 添加游戏状态
         this.isGameOver = false;
+    }
+
+    async initializeAPI() {
+        // 等待配置加载完成
+        await new Promise(resolve => {
+            const checkConfig = () => {
+                if (window.CONFIG?.OPENAI_API_KEY) {
+                    this.apiKey = window.CONFIG.OPENAI_API_KEY;
+                    resolve();
+                } else {
+                    setTimeout(checkConfig, 100);
+                }
+            };
+            checkConfig();
+        });
+        
+        console.log('API Key available:', !!this.apiKey);
     }
 
     setupButtons() {
@@ -269,7 +285,7 @@ class Game {
         this.rightLastClick = 0;
         document.getElementById('leftConfirm').disabled = false;
         document.getElementById('rightConfirm').disabled = false;
-        document.getElementById('leftConfirm').textContent = '确认';
+        document.getElementById('leftConfirm').textContent = '确��';
         document.getElementById('rightConfirm').textContent = '确认';
         
         // 重置游戏状态
