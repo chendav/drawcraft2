@@ -111,13 +111,26 @@ class Battlefield {
                 this.ctx.filter = 'hue-rotate(240deg)';  // 转为蓝色
             }
             
-            this.ctx.drawImage(
-                image,
-                centerX,
-                centerY,
-                this.cellSize,
-                this.cellSize
-            );
+            // 如果是基地，绘制3x3大小
+            if (unit.type === '基地') {
+                const baseSize = this.cellSize * 3;  // 基地占用3x3格子
+                this.ctx.drawImage(
+                    image,
+                    centerX - this.cellSize,  // 向左偏移一格
+                    centerY - this.cellSize,  // 向上偏移一格
+                    baseSize,
+                    baseSize
+                );
+            } else {
+                // 其他单位保持原来的大小
+                this.ctx.drawImage(
+                    image,
+                    centerX,
+                    centerY,
+                    this.cellSize,
+                    this.cellSize
+                );
+            }
             
             this.ctx.restore();
         } else {
