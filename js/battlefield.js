@@ -15,9 +15,30 @@ class Battlefield {
         
         this.initializeBases();
         
-        // 添加单位图片加载
-        this.unitImages = {};
-        this.loadUnitImages();
+        // 加载单位图片
+        this.unitImages = {
+            'soldier': new Image(),
+            'tank': new Image(),
+            'plane': new Image(),
+            'cannon': new Image(),
+            'godzilla': new Image()  // 添加哥斯拉图片
+        };
+
+        // 设置图片源
+        this.unitImages.soldier.src = 'assets/units/soldier.png';
+        this.unitImages.tank.src = 'assets/units/tank.png';
+        this.unitImages.plane.src = 'assets/units/plane.png';
+        this.unitImages.cannon.src = 'assets/units/cannon.png';
+        this.unitImages.godzilla.src = 'assets/units/godzilla.png';  // 设置哥斯拉图片路径
+
+        // 单位类型到图片的映射
+        this.typeToImage = {
+            '士兵': 'soldier',
+            '坦克': 'tank',
+            '飞机': 'plane',
+            '大炮': 'cannon',
+            '哥斯拉': 'godzilla'  // 添加哥斯拉映射
+        };
         
         // 为每个单位添加独立的移动时间记录
         this.unitLastMoveTime = new Map();
@@ -32,34 +53,6 @@ class Battlefield {
         // 放置基地
         this.grid[this.leftBasePos.y][this.leftBasePos.x] = leftBase;
         this.grid[this.rightBasePos.y][this.rightBasePos.x] = rightBase;
-    }
-
-    loadUnitImages() {
-        // 定义单位图片路径
-        const units = ['base', 'soldier', 'tank', 'plane', 'cannon'];
-        
-        units.forEach(unit => {
-            const img = new Image();
-            img.src = `assets/units/${unit}.png`;
-            img.onload = () => {
-                this.unitImages[this.getUnitType(unit)] = img;
-            };
-            img.onerror = () => {
-                console.log(`Failed to load image for ${unit}`);
-            };
-        });
-    }
-
-    getUnitType(filename) {
-        // 将文件名转换为单位类型
-        const typeMap = {
-            'base': '基地',
-            'soldier': '士兵',
-            'tank': '坦克',
-            'plane': '飞机',
-            'cannon': '大炮'
-        };
-        return typeMap[filename];
     }
 
     draw() {
@@ -109,7 +102,7 @@ class Battlefield {
         const centerY = y * this.cellSize;
         
         // 检查是否有对应的图片
-        const image = this.unitImages[unit.type];
+        const image = this.unitImages[this.typeToImage[unit.type]];
         if (image) {
             // 绘制图片
             this.ctx.save();
@@ -180,7 +173,7 @@ class Battlefield {
     updateUnits() {
         const currentTime = Date.now();
         
-        // 获取所有非基地单位���位置和信息
+        // 获取所有非基地单位位置和信息
         const units = [];
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
@@ -314,7 +307,7 @@ class Battlefield {
         const dx = Math.sign(targetPos.x - currentPos.x);
         const dy = Math.sign(targetPos.y - currentPos.y);
 
-        // 尝试���平移动
+        // 尝试水平移动
         if (dx !== 0) {
             const newX = currentPos.x + dx;
             if (this.isValidMove(newX, currentPos.y)) {
