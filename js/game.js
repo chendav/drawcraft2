@@ -46,23 +46,31 @@ class Game {
 
     async initializeAPI() {
         console.log('Initializing API...');
+        let attempts = 0;
+        const maxAttempts = 50; // 5秒后超时
+        
         // 等待配置加载完成
-        await new Promise(resolve => {
+        await new Promise((resolve, reject) => {
             const checkConfig = () => {
-                console.log('Checking config...', window.CONFIG);
+                console.log('Checking config attempt', attempts + 1, window.CONFIG);
                 if (window.CONFIG?.OPENAI_API_KEY) {
                     this.apiKey = window.CONFIG.OPENAI_API_KEY;
                     console.log('API Key set successfully');
                     resolve();
+                } else if (attempts >= maxAttempts) {
+                    reject(new Error('Config loading timeout'));
                 } else {
-                    console.log('Config not ready, retrying...');
+                    attempts++;
                     setTimeout(checkConfig, 100);
                 }
             };
             checkConfig();
+        }).catch(error => {
+            console.error('Failed to initialize API:', error);
+            alert('配置加载失败，请刷新页面重试');
         });
         
-        console.log('API Key available:', !!this.apiKey);
+        console.log('Final API Key status:', !!this.apiKey);
     }
 
     setupButtons() {
