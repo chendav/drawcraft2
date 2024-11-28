@@ -20,10 +20,18 @@ class Game {
         this.leftBaseInfo = document.getElementById('leftBaseInfo');
         this.rightBaseInfo = document.getElementById('rightBaseInfo');
         
-        // 按钮冷却时间（毫秒）
+        // 修改冷却时间的管理方式
+        this.cooldowns = {
+            left: {
+                lastClick: 0,
+                isDrawing: false
+            },
+            right: {
+                lastClick: 0,
+                isDrawing: false
+            }
+        };
         this.cooldownTime = 3000;
-        this.leftLastClick = 0;
-        this.rightLastClick = 0;
         
         // 等待配置加载
         this.initializeAPI();
@@ -82,9 +90,9 @@ class Game {
         
         document.getElementById('leftConfirm').onclick = () => {
             const currentTime = Date.now();
-            if (currentTime - this.leftLastClick >= this.cooldownTime) {
+            if (currentTime - this.cooldowns.left.lastClick >= this.cooldownTime) {
                 this.handleConfirm('left');
-                this.leftLastClick = currentTime;
+                this.cooldowns.left.lastClick = currentTime;
                 this.updateButtonState('left');
             }
         };
@@ -96,9 +104,9 @@ class Game {
         
         document.getElementById('rightConfirm').onclick = () => {
             const currentTime = Date.now();
-            if (currentTime - this.rightLastClick >= this.cooldownTime) {
+            if (currentTime - this.cooldowns.right.lastClick >= this.cooldownTime) {
                 this.handleConfirm('right');
-                this.rightLastClick = currentTime;
+                this.cooldowns.right.lastClick = currentTime;
                 this.updateButtonState('right');
             }
         };
@@ -106,8 +114,14 @@ class Game {
 
     updateButtonState(side) {
         const button = document.getElementById(`${side}Confirm`);
+        const otherButton = document.getElementById(`${side === 'left' ? 'right' : 'left'}Confirm`);
+        
+        // 只禁用当前点击的按钮
         button.disabled = true;
         button.textContent = '冷却中';
+        
+        // 其他按钮保持可用状态
+        otherButton.disabled = false;
         
         setTimeout(() => {
             button.disabled = false;
@@ -126,6 +140,12 @@ class Game {
     }
 
     async handleConfirm(side) {
+        // 检查是否在冷却中
+        const currentTime = Date.now();
+        if (currentTime - this.cooldowns[side].lastClick < this.cooldownTime) {
+            return;
+        }
+
         const canvas = side === 'left' ? this.leftCanvas : this.rightCanvas;
         const imageData = canvas.getImageData();
         
@@ -294,8 +314,8 @@ class Game {
         this.battlefield = new Battlefield('battlefieldCanvas');
         
         // 重置按钮状态
-        this.leftLastClick = 0;
-        this.rightLastClick = 0;
+        this.cooldowns.left.lastClick = 0;
+        this.cooldowns.right.lastClick = 0;
         document.getElementById('leftConfirm').disabled = false;
         document.getElementById('rightConfirm').disabled = false;
         document.getElementById('leftConfirm').textContent = '确';

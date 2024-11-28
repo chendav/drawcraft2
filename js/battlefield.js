@@ -220,26 +220,29 @@ class Battlefield {
                     const dx = Math.sign(targetPos.x - currentPos.x);
                     const dy = Math.sign(targetPos.y - currentPos.y);
                     
-                    // 优先尝试水平移动
-                    if (dx !== 0) {
-                        const newX = currentPos.x + dx;
-                        // 检��移动后的位置是否会进入敌人的攻击范围
-                        if (this.isValidMove(newX, currentPos.y) && !this.isInEnemyRange({x: newX, y: currentPos.y}, unit)) {
-                            this.grid[currentPos.y][currentPos.x] = null;
-                            this.grid[currentPos.y][newX] = unit;
-                            this.unitLastMoveTime.set(unit, currentTime);
-                            continue;
-                        }
-                    }
+                    // 检查前方是否有敌人
+                    const nextX = currentPos.x + dx;
+                    const hasEnemyAhead = this.checkEnemyInPath(currentPos, {x: nextX, y: currentPos.y}, unit);
                     
-                    // 如果水平移动失败，尝试垂直移动
-                    if (dy !== 0) {
-                        const newY = currentPos.y + dy;
-                        // 检查移动后的位置是否会进入敌人的攻击范围
-                        if (this.isValidMove(currentPos.x, newY) && !this.isInEnemyRange({x: currentPos.x, y: newY}, unit)) {
-                            this.grid[currentPos.y][currentPos.x] = null;
-                            this.grid[newY][currentPos.x] = unit;
-                            this.unitLastMoveTime.set(unit, currentTime);
+                    if (!hasEnemyAhead) {
+                        // 优先尝试水平移动
+                        if (dx !== 0) {
+                            if (this.isValidMove(nextX, currentPos.y)) {
+                                this.grid[currentPos.y][currentPos.x] = null;
+                                this.grid[currentPos.y][nextX] = unit;
+                                this.unitLastMoveTime.set(unit, currentTime);
+                                continue;
+                            }
+                        }
+                        
+                        // 如果水平移动失败，尝试垂直移动
+                        if (dy !== 0) {
+                            const newY = currentPos.y + dy;
+                            if (this.isValidMove(currentPos.x, newY) && !this.checkEnemyInPath(currentPos, {x: currentPos.x, y: newY}, unit)) {
+                                this.grid[currentPos.y][currentPos.x] = null;
+                                this.grid[newY][currentPos.x] = unit;
+                                this.unitLastMoveTime.set(unit, currentTime);
+                            }
                         }
                     }
                 }
@@ -292,19 +295,32 @@ class Battlefield {
 
     performAttack(attacker, target) {
         // 计算伤害
-        target.hp -= attacker.attack;
+        let damage = attacker.attack;
         
-        // 如果目标被消灭且是基地，则造成双倍伤害
-        if (target.hp <= 0 && target.type === "基地") {
-            target.hp = 0;  // 确保生命值不会变成负数
+        // 检查克制关系
+        if (UNIT_COUNTERS[attacker.type]?.includes(target.type)) {
+            damage *= COUNTER_BONUS;
         }
-        // 如果是普通单位被消灭，则从网格中移除
-        else if (target.hp <= 0 && target.type !== "基地") {
-            const targetPos = this.findUnitPosition(target);
-            if (targetPos) {
-                this.grid[targetPos.y][targetPos.x] = null;
+        
+        // 应用伤害
+        target.hp -= damage;
+        
+        // 如果目标被消灭
+        if (target.hp <= 0) {
+            if (target.type === "基地") {
+                target.hp = 0;  // 确保基地生命值不会变成负数
+                // 不要提前返回，让游戏状态更新逻辑处理游戏结束
+            } else {
+                // 如果是普通单位被消灭，从网格中移除
+                const targetPos = this.findUnitPosition(target);
+                if (targetPos) {
+                    this.grid[targetPos.y][targetPos.x] = null;
+                }
             }
         }
+        
+        // 打印调试信息
+        console.log(`${attacker.type} attacked ${target.type}, damage: ${damage}, target HP: ${target.hp}`);
     }
 
     moveTowardsTarget(unit, currentPos, targetPos) {
@@ -379,6 +395,33 @@ class Battlefield {
                 }
             }
         }
+        return false;
+    }
+
+    // 添加新方法：检查路径上是否有敌人
+    checkEnemyInPath(from, to, unit) {
+        // 检查目标位置是否有敌人
+        const targetUnit = this.grid[to.y][to.x];
+        if (targetUnit && targetUnit.side !== unit.side) {
+            return true;
+        }
+        
+        // 检查移动路径上是否有敌人
+        const dx = Math.sign(to.x - from.x);
+        const dy = Math.sign(to.y - from.y);
+        let x = from.x;
+        let y = from.y;
+        
+        while (x !== to.x || y !== to.y) {
+            if (dx !== 0) x += dx;
+            if (dy !== 0) y += dy;
+            
+            const checkUnit = this.grid[y][x];
+            if (checkUnit && checkUnit.side !== unit.side) {
+                return true;
+            }
+        }
+        
         return false;
     }
 } 
