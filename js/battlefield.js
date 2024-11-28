@@ -388,8 +388,35 @@ class Battlefield {
         if (dx !== 0) {
             const newX = currentPos.x + dx;
             if (this.isValidMove(newX, currentPos.y)) {
+                // 可以直接水平移动
                 this.grid[currentPos.y][currentPos.x] = null;
                 this.grid[currentPos.y][newX] = unit;
+            } else {
+                // 如果水平移动被阻挡，尝试绕路
+                // 向上或向下移动一格来绕过障碍
+                const upY = currentPos.y - 1;
+                const downY = currentPos.y + 1;
+                
+                // 优先选择朝向目标路线的方向
+                if (Math.abs(upY - pathInfo.targetY) < Math.abs(downY - pathInfo.targetY)) {
+                    // 优先尝试向上
+                    if (this.isValidMove(currentPos.x, upY)) {
+                        this.grid[currentPos.y][currentPos.x] = null;
+                        this.grid[upY][currentPos.x] = unit;
+                    } else if (this.isValidMove(currentPos.x, downY)) {
+                        this.grid[currentPos.y][currentPos.x] = null;
+                        this.grid[downY][currentPos.x] = unit;
+                    }
+                } else {
+                    // 优先尝试向下
+                    if (this.isValidMove(currentPos.x, downY)) {
+                        this.grid[currentPos.y][currentPos.x] = null;
+                        this.grid[downY][currentPos.x] = unit;
+                    } else if (this.isValidMove(currentPos.x, upY)) {
+                        this.grid[currentPos.y][currentPos.x] = null;
+                        this.grid[upY][currentPos.x] = unit;
+                    }
+                }
             }
         }
     }
