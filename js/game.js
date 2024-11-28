@@ -45,13 +45,17 @@ class Game {
     }
 
     async initializeAPI() {
+        console.log('Initializing API...');
         // 等待配置加载完成
         await new Promise(resolve => {
             const checkConfig = () => {
+                console.log('Checking config...', window.CONFIG);
                 if (window.CONFIG?.OPENAI_API_KEY) {
                     this.apiKey = window.CONFIG.OPENAI_API_KEY;
+                    console.log('API Key set successfully');
                     resolve();
                 } else {
+                    console.log('Config not ready, retrying...');
                     setTimeout(checkConfig, 100);
                 }
             };
@@ -285,7 +289,7 @@ class Game {
         this.rightLastClick = 0;
         document.getElementById('leftConfirm').disabled = false;
         document.getElementById('rightConfirm').disabled = false;
-        document.getElementById('leftConfirm').textContent = '确��';
+        document.getElementById('leftConfirm').textContent = '确';
         document.getElementById('rightConfirm').textContent = '确认';
         
         // 重置游戏状态
