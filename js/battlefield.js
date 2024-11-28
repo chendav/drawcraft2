@@ -383,42 +383,91 @@ class Battlefield {
             }
         }
 
-        // 在正确的Y坐标上后，向目标移动
+        // 在接近目标路线后，开始向目标移动
         const dx = Math.sign(targetPos.x - currentPos.x);
+        const dy = Math.sign(targetPos.y - currentPos.y);
+
+        // 尝试移动的优先顺序：
+        // 1. 水平移动向目标
+        // 2. 垂直移动向目标路线
+        // 3. 尝试绕路（上下移动）
+
+        // 首先尝试水平移动
         if (dx !== 0) {
             const newX = currentPos.x + dx;
             if (this.isValidMove(newX, currentPos.y)) {
-                // 可以直接水平移动
                 this.grid[currentPos.y][currentPos.x] = null;
                 this.grid[currentPos.y][newX] = unit;
-            } else {
-                // 如果水平移动被阻挡，尝试绕路
-                // 向上或向下移动一格来绕过障碍
-                const upY = currentPos.y - 1;
-                const downY = currentPos.y + 1;
-                
-                // 优先选择朝向目标路线的方向
-                if (Math.abs(upY - pathInfo.targetY) < Math.abs(downY - pathInfo.targetY)) {
-                    // 优先尝试向上
-                    if (this.isValidMove(currentPos.x, upY)) {
-                        this.grid[currentPos.y][currentPos.x] = null;
-                        this.grid[upY][currentPos.x] = unit;
-                    } else if (this.isValidMove(currentPos.x, downY)) {
-                        this.grid[currentPos.y][currentPos.x] = null;
-                        this.grid[downY][currentPos.x] = unit;
-                    }
-                } else {
-                    // 优先尝试向下
-                    if (this.isValidMove(currentPos.x, downY)) {
-                        this.grid[currentPos.y][currentPos.x] = null;
-                        this.grid[downY][currentPos.x] = unit;
-                    } else if (this.isValidMove(currentPos.x, upY)) {
-                        this.grid[currentPos.y][currentPos.x] = null;
-                        this.grid[upY][currentPos.x] = unit;
-                    }
-                }
+                return;
             }
         }
+
+        // 如果水平移动被阻挡，尝试垂直移动
+        // 计算向上和向下移动的可能性
+        const upY = currentPos.y - 1;
+        const downY = currentPos.y + 1;
+        const canMoveUp = upY >= 0 && this.isValidMove(currentPos.x, upY);
+        const canMoveDown = downY < this.height && this.isValidMove(currentPos.x, downY);
+
+        // 选择最佳的垂直移动方向
+        if (canMoveUp || canMoveDown) {
+            let bestY = null;
+            
+            // 如果两个方向都可以移动，选择更接近目标路线的方向
+            if (canMoveUp && canMoveDown) {
+                const upDist = Math.abs(upY - pathInfo.targetY);
+                const downDist = Math.abs(downY - pathInfo.targetY);
+                bestY = upDist < downDist ? upY : downY;
+            } else {
+                // 否则选择可以移动的方向
+                bestY = canMoveUp ? upY : downY;
+            }
+
+            // 执行移动
+            if (bestY !== null) {
+                this.grid[currentPos.y][currentPos.x] = null;
+                this.grid[bestY][currentPos.x] = unit;
+                return;
+            }
+        }
+
+        // 如果当前位置被完全阻挡，尝试寻找替代路线
+        if (!canMoveUp && !canMoveDown && dx !== 0) {
+            // 尝试改变目标路线
+            const newTargetY = this.findAlternativePath(currentPos, unit.side);
+            if (newTargetY !== null) {
+                pathInfo.targetY = newTargetY;
+                this.unitPaths.set(unit, pathInfo);
+            }
+        }
+    }
+
+    // 添加新方法：寻找替代路线
+    findAlternativePath(currentPos, side) {
+        // 检查上方和下方的空间
+        const checkRange = 3;  // 检查当前位置上下3格的范围
+        const possiblePaths = [];
+
+        for (let offset = 1; offset <= checkRange; offset++) {
+            // 检查上方
+            const upY = currentPos.y - offset;
+            if (upY >= 0 && this.isValidMove(currentPos.x, upY)) {
+                possiblePaths.push(upY);
+            }
+
+            // 检查下方
+            const downY = currentPos.y + offset;
+            if (downY < this.height && this.isValidMove(currentPos.x, downY)) {
+                possiblePaths.push(downY);
+            }
+        }
+
+        // 如果找到可能的路径，随机选择一个
+        if (possiblePaths.length > 0) {
+            return possiblePaths[Math.floor(Math.random() * possiblePaths.length)];
+        }
+
+        return null;
     }
 
     isValidMove(x, y) {

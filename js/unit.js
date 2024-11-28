@@ -57,7 +57,7 @@ const UNIT_STATS = {
         hp: 1500,
         attack: 25,
         move_range: 1,
-        attack_range: 4,
+        attack_range: 10,
         speed: 0.5
     },
     "哥斯拉": {
