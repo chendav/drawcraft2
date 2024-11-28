@@ -35,6 +35,7 @@ class Game {
             - 坦克：装甲车辆、坦克等陆地载具
             - 飞机：飞机、战斗机等空中单位
             - 大炮：火炮、加农炮等固定火力单位
+            - 哥斯拉：巨大的怪兽、恐龙形态、带有尖刺的背鳍
             
             请直接返回单位名称，不要添加任何解释或其他文字。
             如果无法确定是哪个单位，请返回"未知单位"。
@@ -180,7 +181,7 @@ class Game {
             console.log(`${side} canvas result:`, unitType);
             
             // 直接使用 AI 返回的单位类型
-            if (unitType && ["士兵", "坦克", "飞机", "大炮"].includes(unitType)) {
+            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉"].includes(unitType)) {
                 const unit = new Unit(unitType, side);
                 if (this.battlefield.placeUnit(unit, side)) {
                     canvas.clear();
@@ -242,7 +243,7 @@ class Game {
     }
 
     getRandomUnitType() {
-        const types = ['士兵', '坦克', '飞机', '大炮'];
+        const types = ['士兵', '坦克', '飞机', '大炮', '哥斯拉'];
         return types[Math.floor(Math.random() * types.length)];
     }
 
