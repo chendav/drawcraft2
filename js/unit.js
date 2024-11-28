@@ -6,37 +6,37 @@ class Unit {
         // 设置单位属性
         switch(type) {
             case '士兵':
-                this.hp = 100;
+                this.hp = 1000;
                 this.attack = 20;
                 this.speed = 2;
                 this.range = 2;
                 break;
             case '坦克':
-                this.hp = 200;
+                this.hp = 2000;
                 this.attack = 40;
                 this.speed = 1;
                 this.range = 3;
                 break;
             case '飞机':
-                this.hp = 150;
+                this.hp = 1500;
                 this.attack = 30;
                 this.speed = 3;
                 this.range = 4;
                 break;
             case '大炮':
-                this.hp = 120;
+                this.hp = 1200;
                 this.attack = 50;
                 this.speed = 0;
                 this.range = 5;
                 break;
-            case '哥斯拉':  // 添加哥斯拉属性
-                this.hp = 500;      // 超高生命值
-                this.attack = 100;   // 超高攻击力
-                this.speed = 0.5;    // 非常慢
-                this.range = 2;      // 近战攻击
+            case '哥斯拉':
+                this.hp = 5000;
+                this.attack = 100;
+                this.speed = 0.5;
+                this.range = 2;
                 break;
             default:
-                this.hp = 100;
+                this.hp = 1000;
                 this.attack = 20;
                 this.speed = 1;
                 this.range = 2;
@@ -52,42 +52,42 @@ class Unit {
 // 单位属性数据配置
 const UNIT_STATS = {
     "基地": {
-        hp: 1000,
+        hp: 10000,
         attack: 0,
         move_range: 0,
         attack_range: 0,
         speed: 0
     },
     "士兵": {
-        hp: 200,
+        hp: 2000,
         attack: 10,
         move_range: 1,
         attack_range: 1,
         speed: 0.8
     },
     "坦克": {
-        hp: 300,
+        hp: 3000,
         attack: 15,
         move_range: 1,
         attack_range: 2,
         speed: 1
     },
     "飞机": {
-        hp: 250,
+        hp: 2500,
         attack: 20,
         move_range: 2,
         attack_range: 3,
         speed: 2
     },
     "大炮": {
-        hp: 150,
+        hp: 1500,
         attack: 25,
         move_range: 1,
         attack_range: 4,
         speed: 0.5
     },
     "哥斯拉": {
-        hp: 500,
+        hp: 5000,
         attack: 100,
         move_range: 1,
         attack_range: 2,
