@@ -223,7 +223,7 @@ class Battlefield {
                     // 优先尝试水平移动
                     if (dx !== 0) {
                         const newX = currentPos.x + dx;
-                        // 检查移动后的位置是否会进入敌人的攻击范围
+                        // 检��移动后的位置是否会进入敌人的攻击范围
                         if (this.isValidMove(newX, currentPos.y) && !this.isInEnemyRange({x: newX, y: currentPos.y}, unit)) {
                             this.grid[currentPos.y][currentPos.x] = null;
                             this.grid[currentPos.y][newX] = unit;
@@ -274,8 +274,8 @@ class Battlefield {
                         Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2)
                     );
                     
-                    // 检查是否在攻击范围内且是最近的敌人
-                    if (distance <= unit.attack_range && distance < minDistance) {
+                    // 使用 unit.range 而不是 unit.attack_range
+                    if (distance <= unit.range && distance < minDistance) {
                         minDistance = distance;
                         nearestEnemy = {
                             unit: target,
@@ -372,7 +372,8 @@ class Battlefield {
                     const distance = Math.sqrt(
                         Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2)
                     );
-                    if (distance <= enemy.attack_range) {
+                    // 使用 enemy.range 而不是 enemy.attack_range
+                    if (distance <= enemy.range) {
                         return true;
                     }
                 }
