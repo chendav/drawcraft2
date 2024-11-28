@@ -27,7 +27,7 @@ class Unit {
 const UNIT_STATS = {
     "基地": {
         hp: 10000,
-        attack: 0,
+        attack: 10,
         move_range: 0,
         attack_range: 0,
         speed: 0
