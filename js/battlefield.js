@@ -211,12 +211,12 @@ class Battlefield {
 
     // 新增：分配移动路线
     assignMovementPath(unit, startY) {
-        // 随机选择一条路线（上、中、下）
         const paths = ['top', 'middle', 'bottom'];
         const path = paths[Math.floor(Math.random() * paths.length)];
         this.unitPaths.set(unit, {
             path: path,
-            targetY: this.getTargetY(path)
+            targetY: this.getTargetY(path),
+            lastMoveDirection: null  // 添加移动方向记录
         });
     }
 
@@ -385,12 +385,6 @@ class Battlefield {
 
         // 在接近目标路线后，开始向目标移动
         const dx = Math.sign(targetPos.x - currentPos.x);
-        const dy = Math.sign(targetPos.y - currentPos.y);
-
-        // 尝试移动的优先顺序：
-        // 1. 水平移动向目标
-        // 2. 垂直移动向目标路线
-        // 3. 尝试绕路（上下移动）
 
         // 首先尝试水平移动
         if (dx !== 0) {
@@ -398,29 +392,44 @@ class Battlefield {
             if (this.isValidMove(newX, currentPos.y)) {
                 this.grid[currentPos.y][currentPos.x] = null;
                 this.grid[currentPos.y][newX] = unit;
+                // 记录成功的水平移动
+                pathInfo.lastMoveDirection = 'horizontal';
                 return;
             }
         }
 
         // 如果水平移动被阻挡，尝试垂直移动
-        // 计算向上和向下移动的可能性
+        // 但要避免与上一次移动方向相反
         const upY = currentPos.y - 1;
         const downY = currentPos.y + 1;
         const canMoveUp = upY >= 0 && this.isValidMove(currentPos.x, upY);
         const canMoveDown = downY < this.height && this.isValidMove(currentPos.x, downY);
 
-        // 选择最佳的垂直移动方向
         if (canMoveUp || canMoveDown) {
             let bestY = null;
             
-            // 如果两个方向都可以移动，选择更接近目标路线的方向
-            if (canMoveUp && canMoveDown) {
-                const upDist = Math.abs(upY - pathInfo.targetY);
-                const downDist = Math.abs(downY - pathInfo.targetY);
-                bestY = upDist < downDist ? upY : downY;
-            } else {
-                // 否则选择可以移动的方向
-                bestY = canMoveUp ? upY : downY;
+            // 如果上一次是向上移动，优先尝试继续向上
+            if (pathInfo.lastMoveDirection === 'up' && canMoveUp) {
+                bestY = upY;
+            }
+            // 如果上一次是向下移动，优先尝试继续向下
+            else if (pathInfo.lastMoveDirection === 'down' && canMoveDown) {
+                bestY = downY;
+            }
+            // 如果没有之前的移动记录，或者不能继续之前的方向
+            else {
+                // 选择更接近目标路线的方向
+                if (canMoveUp && canMoveDown) {
+                    const upDist = Math.abs(upY - pathInfo.targetY);
+                    const downDist = Math.abs(downY - pathInfo.targetY);
+                    bestY = upDist < downDist ? upY : downY;
+                    // 记录新的移动方向
+                    pathInfo.lastMoveDirection = upDist < downDist ? 'up' : 'down';
+                } else {
+                    bestY = canMoveUp ? upY : downY;
+                    // 记录新的移动方向
+                    pathInfo.lastMoveDirection = canMoveUp ? 'up' : 'down';
+                }
             }
 
             // 执行移动
@@ -431,12 +440,12 @@ class Battlefield {
             }
         }
 
-        // 如果当前位置被完全阻挡，尝试寻找替代路线
+        // 如果当前位置被完全阻挡，尝试寻找新的路线
         if (!canMoveUp && !canMoveDown && dx !== 0) {
-            // 尝试改变目标路线
             const newTargetY = this.findAlternativePath(currentPos, unit.side);
             if (newTargetY !== null) {
                 pathInfo.targetY = newTargetY;
+                pathInfo.lastMoveDirection = null;  // 重置移动方向
                 this.unitPaths.set(unit, pathInfo);
             }
         }
