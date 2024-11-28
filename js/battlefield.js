@@ -21,7 +21,8 @@ class Battlefield {
             'tank': new Image(),
             'plane': new Image(),
             'cannon': new Image(),
-            'godzilla': new Image()  // 添加哥斯拉图片
+            'godzilla': new Image(),
+            'base': new Image()  // 添加基地图片
         };
 
         // 设置图片源
@@ -29,7 +30,8 @@ class Battlefield {
         this.unitImages.tank.src = 'assets/units/tank.png';
         this.unitImages.plane.src = 'assets/units/plane.png';
         this.unitImages.cannon.src = 'assets/units/cannon.png';
-        this.unitImages.godzilla.src = 'assets/units/godzilla.png';  // 设置哥斯拉图片路径
+        this.unitImages.godzilla.src = 'assets/units/godzilla.png';
+        this.unitImages.base.src = 'assets/units/base.png';  // 设置基地图片路径
 
         // 单位类型到图片的映射
         this.typeToImage = {
@@ -37,7 +39,8 @@ class Battlefield {
             '坦克': 'tank',
             '飞机': 'plane',
             '大炮': 'cannon',
-            '哥斯拉': 'godzilla'  // 添加哥斯拉映射
+            '哥斯拉': 'godzilla',
+            '基地': 'base'  // 添加基地映射
         };
         
         // 为每个单位添加独立的移动时间记录
@@ -205,10 +208,10 @@ class Battlefield {
             const nearestEnemy = this.findNearestEnemyInRange(currentPos, unit);
             
             if (nearestEnemy) {
-                // 如果有敌方单位在攻击范围内，进行攻击
+                // 如果有敌方单位在攻击范围内，停止移动并进行攻击
                 this.performAttack(unit, nearestEnemy.unit);
             } else {
-                // 如果没有敌方单位在攻击范围内，向敌方基地移动
+                // 只有在攻击范围内没有敌人时才移动
                 const targetPos = unit.side === 'left' ? this.rightBasePos : this.leftBasePos;
                 
                 // 检查是否到达移动时间
@@ -220,10 +223,11 @@ class Battlefield {
                     // 优先尝试水平移动
                     if (dx !== 0) {
                         const newX = currentPos.x + dx;
-                        if (this.isValidMove(newX, currentPos.y)) {
+                        // 检查移动后的位置是否会进入敌人的攻击范围
+                        if (this.isValidMove(newX, currentPos.y) && !this.isInEnemyRange({x: newX, y: currentPos.y}, unit)) {
                             this.grid[currentPos.y][currentPos.x] = null;
                             this.grid[currentPos.y][newX] = unit;
-                            this.unitLastMoveTime.set(unit, currentTime);  // 更新移动时间
+                            this.unitLastMoveTime.set(unit, currentTime);
                             continue;
                         }
                     }
@@ -231,10 +235,11 @@ class Battlefield {
                     // 如果水平移动失败，尝试垂直移动
                     if (dy !== 0) {
                         const newY = currentPos.y + dy;
-                        if (this.isValidMove(currentPos.x, newY)) {
+                        // 检查移动后的位置是否会进入敌人的攻击范围
+                        if (this.isValidMove(currentPos.x, newY) && !this.isInEnemyRange({x: currentPos.x, y: newY}, unit)) {
                             this.grid[currentPos.y][currentPos.x] = null;
                             this.grid[newY][currentPos.x] = unit;
-                            this.unitLastMoveTime.set(unit, currentTime);  // 更新移动时间
+                            this.unitLastMoveTime.set(unit, currentTime);
                         }
                     }
                 }
@@ -356,5 +361,23 @@ class Battlefield {
             }
         }
         return null;
+    }
+
+    // 添加新方法：检查位置是否在敌人的攻击范围内
+    isInEnemyRange(pos, unit) {
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
+                const enemy = this.grid[y][x];
+                if (enemy && enemy.side !== unit.side) {
+                    const distance = Math.sqrt(
+                        Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2)
+                    );
+                    if (distance <= enemy.attack_range) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 } 
