@@ -3,7 +3,15 @@
   "builds": [
     {
       "src": "**/*",
-      "use": "@vercel/static"
+      "use": "@vercel/static",
+      "config": {
+        "env": {
+          "OPENAI_API_KEY": "@openai_api_key"
+        }
+      }
     }
-  ]
+  ],
+  "env": {
+    "OPENAI_API_KEY": "@openai_api_key"
+  }
 } 

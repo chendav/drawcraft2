@@ -25,8 +25,9 @@ class Game {
         this.leftLastClick = 0;
         this.rightLastClick = 0;
         
-        // OpenAI API Key
-        this.apiKey = process.env.OPENAI_API_KEY;
+        // 修改获取 API Key 的方式
+        this.apiKey = window.CONFIG?.OPENAI_API_KEY;
+        console.log('API Key available:', !!this.apiKey);  // 调试用
         
         // 设置系统提示词
         this.systemPrompt = `
@@ -42,8 +43,6 @@ class Game {
         
         // 添加游戏状态
         this.isGameOver = false;
-        
-        console.log('API Key available:', !!this.apiKey);
     }
 
     setupButtons() {
