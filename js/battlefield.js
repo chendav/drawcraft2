@@ -371,74 +371,88 @@ class Battlefield {
         const pathInfo = this.unitPaths.get(unit);
         if (!pathInfo) return;
 
-        // 首先移动到指定路线的Y坐标
-        if (Math.abs(currentPos.y - pathInfo.targetY) > 1) {
-            // 需要先调整Y坐标到指定路线
-            const dy = Math.sign(pathInfo.targetY - currentPos.y);
-            const newY = currentPos.y + dy;
-            if (this.isValidMove(currentPos.x, newY)) {
-                this.grid[currentPos.y][currentPos.x] = null;
-                this.grid[newY][currentPos.x] = unit;
-                return;
-            }
-        }
+        // 计算当前位置到目标的距离
+        const currentDist = Math.sqrt(
+            Math.pow(targetPos.x - currentPos.x, 2) + 
+            Math.pow(targetPos.y - currentPos.y, 2)
+        );
 
-        // 在接近目标路线后，开始向目标移动
+        // 检查所有可能的移动方向
+        const possibleMoves = [];
+
+        // 检查水平移动
         const dx = Math.sign(targetPos.x - currentPos.x);
-
-        // 首先尝试水平移动
         if (dx !== 0) {
             const newX = currentPos.x + dx;
             if (this.isValidMove(newX, currentPos.y)) {
-                this.grid[currentPos.y][currentPos.x] = null;
-                this.grid[currentPos.y][newX] = unit;
-                pathInfo.lastMoveDirection = 'horizontal';
-                return;
+                const dist = Math.sqrt(
+                    Math.pow(targetPos.x - newX, 2) + 
+                    Math.pow(targetPos.y - currentPos.y, 2)
+                );
+                possibleMoves.push({
+                    x: newX,
+                    y: currentPos.y,
+                    dist: dist,
+                    direction: 'horizontal'
+                });
             }
         }
 
-        // 如果水平移动被阻挡，尝试垂直移动
+        // 检查垂直移动
         const upY = currentPos.y - 1;
         const downY = currentPos.y + 1;
-        const canMoveUp = upY >= 0 && this.isValidMove(currentPos.x, upY);
-        const canMoveDown = downY < this.height && this.isValidMove(currentPos.x, downY);
 
-        if (canMoveUp || canMoveDown) {
-            let bestY = null;
+        // 检查向上移动
+        if (upY >= 0 && this.isValidMove(currentPos.x, upY)) {
+            const dist = Math.sqrt(
+                Math.pow(targetPos.x - currentPos.x, 2) + 
+                Math.pow(targetPos.y - upY, 2)
+            );
+            possibleMoves.push({
+                x: currentPos.x,
+                y: upY,
+                dist: dist,
+                direction: 'up'
+            });
+        }
+
+        // 检查向下移动
+        if (downY < this.height && this.isValidMove(currentPos.x, downY)) {
+            const dist = Math.sqrt(
+                Math.pow(targetPos.x - currentPos.x, 2) + 
+                Math.pow(targetPos.y - downY, 2)
+            );
+            possibleMoves.push({
+                x: currentPos.x,
+                y: downY,
+                dist: dist,
+                direction: 'down'
+            });
+        }
+
+        // 从所有可能的移动中选择最佳移动
+        if (possibleMoves.length > 0) {
+            // 按照到目标的距离排序
+            possibleMoves.sort((a, b) => a.dist - b.dist);
             
-            // 计算向上和向下移动后与目标的距离
-            const upDist = canMoveUp ? 
-                Math.sqrt(Math.pow(targetPos.x - currentPos.x, 2) + Math.pow(targetPos.y - upY, 2)) : 
-                Infinity;
-            const downDist = canMoveDown ? 
-                Math.sqrt(Math.pow(targetPos.x - currentPos.x, 2) + Math.pow(targetPos.y - downY, 2)) : 
-                Infinity;
-
-            // 优先选择靠近目标的方向
-            if (canMoveUp && canMoveDown) {
-                bestY = upDist < downDist ? upY : downY;
-                pathInfo.lastMoveDirection = upDist < downDist ? 'up' : 'down';
-            } else {
-                bestY = canMoveUp ? upY : downY;
-                pathInfo.lastMoveDirection = canMoveUp ? 'up' : 'down';
-            }
-
-            // 执行移动
-            if (bestY !== null) {
+            // 选择能让单位更接近目标的移动
+            const bestMove = possibleMoves.find(move => move.dist < currentDist);
+            
+            if (bestMove) {
+                // 执行移动
                 this.grid[currentPos.y][currentPos.x] = null;
-                this.grid[bestY][currentPos.x] = unit;
+                this.grid[bestMove.y][bestMove.x] = unit;
+                pathInfo.lastMoveDirection = bestMove.direction;
                 return;
             }
         }
 
-        // 如果当前位置被完全阻挡，尝试寻找新的路线
-        if (!canMoveUp && !canMoveDown && dx !== 0) {
-            const newTargetY = this.findAlternativePath(currentPos, unit.side, targetPos);
-            if (newTargetY !== null) {
-                pathInfo.targetY = newTargetY;
-                pathInfo.lastMoveDirection = null;
-                this.unitPaths.set(unit, pathInfo);
-            }
+        // 如果没有找到更好的移动，尝试寻找新的路线
+        const newTargetY = this.findAlternativePath(currentPos, unit.side, targetPos);
+        if (newTargetY !== null) {
+            pathInfo.targetY = newTargetY;
+            pathInfo.lastMoveDirection = null;
+            this.unitPaths.set(unit, pathInfo);
         }
     }
 
