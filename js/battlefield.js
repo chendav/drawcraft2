@@ -26,7 +26,8 @@ class Battlefield {
             'plane': new Image(),
             'cannon': new Image(),
             'godzilla': new Image(),
-            'base': new Image()
+            'base': new Image(),
+            'wall': new Image()
         };
 
         // 设置图源
@@ -36,6 +37,7 @@ class Battlefield {
         this.unitImages.cannon.src = 'assets/units/cannon.png';
         this.unitImages.godzilla.src = 'assets/units/godzilla.png';
         this.unitImages.base.src = 'assets/units/base.png';  // 设置基地图片路径
+        this.unitImages.wall.src = 'assets/units/wall.png';  // 需要添加防御墙图片
 
         // 单位类型到图片的映射
         this.typeToImage = {
@@ -44,7 +46,8 @@ class Battlefield {
             '飞机': 'plane',
             '大炮': 'cannon',
             '哥斯拉': 'godzilla',
-            '基地': 'base'  // 添加基地映射
+            '基地': 'base',
+            '防御墙': 'wall'
         };
         
         // 为每个单位添加独立的移动时间记录
