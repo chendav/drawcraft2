@@ -29,7 +29,7 @@ const UNIT_STATS = {
         hp: 10000,
         attack: 10,
         move_range: 0,
-        attack_range: 0,
+        attack_range: 4,
         speed: 0
     },
     "士兵": {

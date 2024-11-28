@@ -371,6 +371,39 @@ class Battlefield {
         const pathInfo = this.unitPaths.get(unit);
         if (!pathInfo) return;
 
+        // 检查是否已经接近目标基地
+        const distanceToTarget = Math.sqrt(
+            Math.pow(targetPos.x - currentPos.x, 2) + 
+            Math.pow(targetPos.y - currentPos.y, 2)
+        );
+
+        // 如果距离目标基地较远，按照预定路线移动
+        if (distanceToTarget > 5) {  // 当距离大于5格时，按预定路线移动
+            // 首先移动到指定路线的Y坐标
+            if (Math.abs(currentPos.y - pathInfo.targetY) > 1) {
+                // 需要先调整Y坐标到指定路线
+                const dy = Math.sign(pathInfo.targetY - currentPos.y);
+                const newY = currentPos.y + dy;
+                if (this.isValidMove(currentPos.x, newY)) {
+                    this.grid[currentPos.y][currentPos.x] = null;
+                    this.grid[newY][currentPos.x] = unit;
+                    return;
+                }
+            }
+
+            // 在正确的Y坐标上后，向目标水平移动
+            const dx = Math.sign(targetPos.x - currentPos.x);
+            if (dx !== 0) {
+                const newX = currentPos.x + dx;
+                if (this.isValidMove(newX, currentPos.y)) {
+                    this.grid[currentPos.y][currentPos.x] = null;
+                    this.grid[currentPos.y][newX] = unit;
+                    return;
+                }
+            }
+        }
+        
+        // 如果距离目标基地较近或者预定路线被阻挡，使用智能寻路
         // 计算当前位置到目标的距离
         const currentDist = Math.sqrt(
             Math.pow(targetPos.x - currentPos.x, 2) + 
