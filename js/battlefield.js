@@ -124,6 +124,14 @@ class Battlefield {
                     baseSize,
                     baseSize
                 );
+                
+                // 绘制基地血条（在基地上方）
+                this.drawHealthBar(
+                    centerX - this.cellSize,
+                    centerY - this.cellSize - 10,
+                    baseSize,
+                    unit
+                );
             } else {
                 // 其他单位保持原来的大小
                 this.ctx.drawImage(
@@ -132,6 +140,14 @@ class Battlefield {
                     centerY,
                     this.cellSize,
                     this.cellSize
+                );
+                
+                // 绘制单位血条（在单位上方）
+                this.drawHealthBar(
+                    centerX,
+                    centerY - 5,
+                    this.cellSize,
+                    unit
                 );
             }
             
@@ -159,6 +175,54 @@ class Battlefield {
                 centerX + this.cellSize/2,
                 centerY + this.cellSize/2
             );
+            
+            // 绘制血条
+            this.drawHealthBar(
+                centerX,
+                centerY - 5,
+                this.cellSize,
+                unit
+            );
+        }
+    }
+
+    // 添加新方法：绘制血条
+    drawHealthBar(x, y, width, unit) {
+        const height = 4;  // 血条高度
+        const padding = 1;  // 血条边框padding
+        
+        // 绘制血条背景（黑色边框）
+        this.ctx.fillStyle = 'black';
+        this.ctx.fillRect(x, y, width, height);
+        
+        // 绘制血条底色（红色）
+        this.ctx.fillStyle = 'red';
+        this.ctx.fillRect(x + padding, y + padding, width - padding * 2, height - padding * 2);
+        
+        // 计算当前生命值比例
+        const healthRatio = unit.hp / unit.maxHp;
+        
+        // 绘制当前生命值（绿色）
+        this.ctx.fillStyle = this.getHealthColor(healthRatio);
+        this.ctx.fillRect(
+            x + padding,
+            y + padding,
+            (width - padding * 2) * healthRatio,
+            height - padding * 2
+        );
+    }
+
+    // 添加新方法：根据生命值比例获取颜色
+    getHealthColor(ratio) {
+        if (ratio > 0.5) {
+            // 血量大于50%时显示绿色
+            return '#00ff00';
+        } else if (ratio > 0.25) {
+            // 血量大于25%时显示黄色
+            return '#ffff00';
+        } else {
+            // 血量低于25%时显示红色
+            return '#ff0000';
         }
     }
 
