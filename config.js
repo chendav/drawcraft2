@@ -1,12 +1,17 @@
-// 从服务器获取配置
 async function loadConfig() {
     try {
         console.log('Fetching config from server...');
-        const response = await fetch('/api/config');
+        const response = await fetch('/api/config', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
         console.log('Server response status:', response.status);
         
         if (!response.ok) {
             const errorText = await response.text();
+            console.error('Server error response:', errorText);
             throw new Error(`Server responded with ${response.status}: ${errorText}`);
         }
         
@@ -24,8 +29,7 @@ async function loadConfig() {
         console.log('Config loaded successfully');
     } catch (error) {
         console.error('Failed to load config:', error);
-        // 添加视觉反馈
-        document.body.innerHTML += `<div style="color: red; position: fixed; top: 10px; left: 50%; transform: translateX(-50%);">
+        document.body.innerHTML += `<div style="color: red; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: white; padding: 10px; border: 1px solid red;">
             配置加载失败: ${error.message}
         </div>`;
     }
