@@ -250,7 +250,7 @@ class Battlefield {
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 const unit = this.grid[y][x];
-                if (unit) {  // 移除 unit.type !== "基地" 的检查，让基地也参与战斗
+                if (unit) {
                     units.push({
                         unit: unit,
                         pos: {x, y}
@@ -264,13 +264,11 @@ class Battlefield {
             const unit = unitInfo.unit;
             const currentPos = unitInfo.pos;
             
-            // 获取或初始化这个单位的上次移动时间
+            // 获取或初始化这个单位的上次行动时间
             if (!this.unitLastMoveTime.has(unit)) {
                 this.unitLastMoveTime.set(unit, currentTime);
             }
             
-            // 计算这个单位的移动间隔
-            const moveInterval = Math.floor(this.baseInterval / unit.speed);
             const lastMoveTime = this.unitLastMoveTime.get(unit);
             
             // 寻找攻击范围内最近的敌方单位
@@ -278,16 +276,19 @@ class Battlefield {
             
             if (nearestEnemy) {
                 // 如果有敌方单位在攻击范围内，进行攻击
-                // 检查攻击冷却
-                if (currentTime - lastMoveTime >= moveInterval) {
+                // 使用 attack_speed 计算攻击间隔
+                const attackInterval = Math.floor(this.baseInterval / unit.attack_speed);
+                if (currentTime - lastMoveTime >= attackInterval) {
                     this.performAttack(unit, nearestEnemy.unit);
                     this.unitLastMoveTime.set(unit, currentTime);
+                    console.log(`${unit.type} 攻击 ${nearestEnemy.unit.type}, 距离: ${nearestEnemy.distance}`);
                 }
-            } else if (unit.type !== "基地") {  // 基地不移动
+            } else if (unit.type !== "基地") {
                 // 只有在攻击范围内没有敌人时才移动
                 const targetPos = unit.side === 'left' ? this.rightBasePos : this.leftBasePos;
                 
-                // 检查是否到达移动时间
+                // 使用 speed 计算移动间隔
+                const moveInterval = Math.floor(this.baseInterval / unit.speed);
                 if (currentTime - lastMoveTime >= moveInterval) {
                     this.moveTowardsTarget(unit, currentPos, targetPos);
                     this.unitLastMoveTime.set(unit, currentTime);
@@ -295,7 +296,7 @@ class Battlefield {
             }
         }
         
-        // 清理已经不存在的单位的移动时间记录
+        // 清理已经不存在的单位的记录
         for (const [unit] of this.unitLastMoveTime) {
             let unitExists = false;
             for (const {unit: existingUnit} of units) {
@@ -306,6 +307,7 @@ class Battlefield {
             }
             if (!unitExists) {
                 this.unitLastMoveTime.delete(unit);
+                this.unitPaths.delete(unit);  // 同时清理路径记录
             }
         }
     }
