@@ -26,7 +26,7 @@ class Game {
         this.rightLastClick = 0;
         
         // OpenAI API Key
-        const apiKey = process.env.OPENAI_API_KEY;
+        this.apiKey = process.env.OPENAI_API_KEY;
         
         // 设置系统提示词
         this.systemPrompt = `
@@ -42,6 +42,8 @@ class Game {
         
         // 添加游戏状态
         this.isGameOver = false;
+        
+        console.log('API Key available:', !!this.apiKey);
     }
 
     setupButtons() {
@@ -138,7 +140,9 @@ class Game {
             });
             
             if (!response.ok) {
-                throw new Error(`API request failed: ${response.status}`);
+                const errorData = await response.json().catch(() => ({}));
+                console.error('API Error:', errorData);
+                throw new Error(`API request failed: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
             }
             
             const result = await response.json();
@@ -164,8 +168,7 @@ class Game {
             
         } catch (error) {
             console.error('Recognition error:', error);
-            console.error('Error details:', error.response?.data || error.message);
-            alert('识别失败，请重试');
+            alert('识别失败: ' + error.message);
         }
     }
 
