@@ -15,6 +15,10 @@ class Battlefield {
         
         this.initializeBases();
         
+        // 添加背景图片
+        this.backgroundImage = new Image();
+        this.backgroundImage.src = 'assets/background.png';  // 确保有这个图片
+        
         // 加载单位图片
         this.unitImages = {
             'soldier': new Image(),
@@ -22,7 +26,7 @@ class Battlefield {
             'plane': new Image(),
             'cannon': new Image(),
             'godzilla': new Image(),
-            'base': new Image()  // 添加基地图片
+            'base': new Image()
         };
 
         // 设置图片源
@@ -62,31 +66,23 @@ class Battlefield {
         // 清空画布
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // 绘制网格
-        this.drawGrid();
+        // 绘制背景
+        if (this.backgroundImage.complete) {  // 确保图片已加载
+            // 方式1：拉伸背景以适应画布
+            this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+            
+            // 或者方式2：平铺背景
+            // const pattern = this.ctx.createPattern(this.backgroundImage, 'repeat');
+            // this.ctx.fillStyle = pattern;
+            // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        } else {
+            // 如果图片未加载完成，使用纯色背景
+            this.ctx.fillStyle = '#e0e0e0';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
         
         // 绘制单位
         this.drawUnits();
-    }
-
-    drawGrid() {
-        this.ctx.strokeStyle = '#ccc';
-        
-        // 绘制垂直线
-        for (let x = 0; x <= this.width; x++) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(x * this.cellSize, 0);
-            this.ctx.lineTo(x * this.cellSize, this.height * this.cellSize);
-            this.ctx.stroke();
-        }
-        
-        // 绘制水平线
-        for (let y = 0; y <= this.height; y++) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, y * this.cellSize);
-            this.ctx.lineTo(this.width * this.cellSize, y * this.cellSize);
-            this.ctx.stroke();
-        }
     }
 
     drawUnits() {
