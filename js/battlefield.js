@@ -29,7 +29,7 @@ class Battlefield {
             'base': new Image()
         };
 
-        // 设置图片源
+        // 设置图源
         this.unitImages.soldier.src = 'assets/units/soldier.png';
         this.unitImages.tank.src = 'assets/units/tank.png';
         this.unitImages.plane.src = 'assets/units/plane.png';
@@ -50,6 +50,9 @@ class Battlefield {
         // 为每个单位添加独立的移动时间记录
         this.unitLastMoveTime = new Map();
         this.baseInterval = 2000;  // 基础移动间隔（2秒）
+        
+        // 添加单位移动路线的记录
+        this.unitPaths = new Map();  // 记录每个单位的移动路线
     }
 
     initializeBases() {
@@ -160,16 +163,73 @@ class Battlefield {
     }
 
     placeUnit(unit, side) {
-        const startX = side === 'left' ? 1 : this.width - 2;
+        // 根据基地位置确定生成位置
+        const basePos = side === 'left' ? this.leftBasePos : this.rightBasePos;
+        const startX = side === 'left' ? basePos.x + 2 : basePos.x - 1;  // 在基地旁边
         
-        // 寻找空位放置单位
-        for (let y = 0; y < this.height; y++) {
-            if (!this.grid[y][startX]) {
-                this.grid[y][startX] = unit;
-                return true;
+        // 尝试在基地周围放置单位（基地周围的位置）
+        const positions = [
+            // 基地中间行的位置
+            {x: startX, y: basePos.y},
+            // 基地上方的位置
+            {x: startX, y: basePos.y - 1},
+            {x: startX, y: basePos.y - 2},
+            // 基地下方的位置
+            {x: startX, y: basePos.y + 1},
+            {x: startX, y: basePos.y + 2}
+        ];
+        
+        // 如果初始位置都被占用，继续向外扩展
+        const maxTries = 10;
+        let currentX = startX;
+        
+        for (let i = 0; i < maxTries; i++) {
+            for (const pos of positions) {
+                if (pos.y >= 0 && pos.y < this.height && !this.grid[pos.y][currentX]) {
+                    this.grid[pos.y][currentX] = unit;
+                    // 随机分配移动路线
+                    this.assignMovementPath(unit, pos.y);
+                    return true;
+                }
             }
+            
+            // 如果当前列都满了，移动到下一列
+            if (side === 'left') {
+                currentX++;  // 左方向右扩展
+                if (currentX >= this.width / 2) break;  // 不超过中线
+            } else {
+                currentX--;  // 右方向左扩展
+                if (currentX <= this.width / 2) break;  // 不超过中线
+            }
+            
+            // 更新positions数组中的x坐标
+            positions.forEach(pos => pos.x = currentX);
         }
-        return false;
+        
+        return false;  // 如果所有可用位置都被占用，返回失败
+    }
+
+    // 新增：分配移动路线
+    assignMovementPath(unit, startY) {
+        // 随机选择一条路线（上、中、下）
+        const paths = ['top', 'middle', 'bottom'];
+        const path = paths[Math.floor(Math.random() * paths.length)];
+        this.unitPaths.set(unit, {
+            path: path,
+            targetY: this.getTargetY(path)
+        });
+    }
+
+    // 新增：获取目标Y坐标
+    getTargetY(path) {
+        switch(path) {
+            case 'top':
+                return Math.floor(this.height * 0.2);  // 上路
+            case 'middle':
+                return Math.floor(this.height * 0.5);  // 中路
+            case 'bottom':
+                return Math.floor(this.height * 0.8);  // 下路
+        }
     }
 
     getBase(side) {
@@ -324,6 +384,7 @@ class Battlefield {
                 const targetPos = this.findUnitPosition(target);
                 if (targetPos) {
                     this.grid[targetPos.y][targetPos.x] = null;
+                    this.unitPaths.delete(target);  // 清理路线记录
                 }
             }
         }
@@ -333,26 +394,28 @@ class Battlefield {
     }
 
     moveTowardsTarget(unit, currentPos, targetPos) {
-        // 计算移动方向
-        const dx = Math.sign(targetPos.x - currentPos.x);
-        const dy = Math.sign(targetPos.y - currentPos.y);
+        const pathInfo = this.unitPaths.get(unit);
+        if (!pathInfo) return;
 
-        // 尝试水平移动
+        // 首先移动到指定路线的Y坐标
+        if (Math.abs(currentPos.y - pathInfo.targetY) > 1) {
+            // 需要先调整Y坐标到指定路线
+            const dy = Math.sign(pathInfo.targetY - currentPos.y);
+            const newY = currentPos.y + dy;
+            if (this.isValidMove(currentPos.x, newY)) {
+                this.grid[currentPos.y][currentPos.x] = null;
+                this.grid[newY][currentPos.x] = unit;
+                return;
+            }
+        }
+
+        // 在正确的Y坐标上后，向目标移动
+        const dx = Math.sign(targetPos.x - currentPos.x);
         if (dx !== 0) {
             const newX = currentPos.x + dx;
             if (this.isValidMove(newX, currentPos.y)) {
                 this.grid[currentPos.y][currentPos.x] = null;
                 this.grid[currentPos.y][newX] = unit;
-                return;
-            }
-        }
-
-        // 如果水平移动失败，尝试垂直移动
-        if (dy !== 0) {
-            const newY = currentPos.y + dy;
-            if (this.isValidMove(currentPos.x, newY)) {
-                this.grid[currentPos.y][currentPos.x] = null;
-                this.grid[newY][currentPos.x] = unit;
             }
         }
     }
