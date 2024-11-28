@@ -114,42 +114,22 @@ class Battlefield {
                 this.ctx.filter = 'hue-rotate(240deg)';  // 转为蓝色
             }
             
-            // 如果是基地，绘制3x3大小
-            if (unit.type === '基地') {
-                const baseSize = this.cellSize * 3;  // 基地占用3x3格子
-                this.ctx.drawImage(
-                    image,
-                    centerX - this.cellSize,  // 向左偏移一格
-                    centerY - this.cellSize,  // 向上偏移一格
-                    baseSize,
-                    baseSize
-                );
-                
-                // 绘制基地血条（在基地上方）
-                this.drawHealthBar(
-                    centerX - this.cellSize,
-                    centerY - this.cellSize - 10,
-                    baseSize,
-                    unit
-                );
-            } else {
-                // 其他单位保持原来的大小
-                this.ctx.drawImage(
-                    image,
-                    centerX,
-                    centerY,
-                    this.cellSize,
-                    this.cellSize
-                );
-                
-                // 绘制单位血条（在单位上方）
-                this.drawHealthBar(
-                    centerX,
-                    centerY - 5,
-                    this.cellSize,
-                    unit
-                );
-            }
+            // 所有单位（包括基地）使用相同大小
+            this.ctx.drawImage(
+                image,
+                centerX,
+                centerY,
+                this.cellSize,
+                this.cellSize
+            );
+            
+            // 绘制血条（在单位上方）
+            this.drawHealthBar(
+                centerX,
+                centerY - 5,
+                this.cellSize,
+                unit
+            );
             
             this.ctx.restore();
         } else {
@@ -229,18 +209,16 @@ class Battlefield {
     placeUnit(unit, side) {
         // 根据基地位置确定生成位置
         const basePos = side === 'left' ? this.leftBasePos : this.rightBasePos;
-        const startX = side === 'left' ? basePos.x + 2 : basePos.x - 1;  // 在基地旁边
+        const startX = side === 'left' ? basePos.x + 1 : basePos.x - 1;  // 在基地旁边一格
         
-        // 尝试在基地周围放置单位（基地周围的位置）
+        // 尝试在基地周围放置单位
         const positions = [
-            // 基地中间行的位置
+            // 基地同行的位置
             {x: startX, y: basePos.y},
             // 基地上方的位置
             {x: startX, y: basePos.y - 1},
-            {x: startX, y: basePos.y - 2},
             // 基地下方的位置
-            {x: startX, y: basePos.y + 1},
-            {x: startX, y: basePos.y + 2}
+            {x: startX, y: basePos.y + 1}
         ];
         
         // 如果初始位置都被占用，继续向外扩展
