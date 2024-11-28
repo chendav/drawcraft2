@@ -33,7 +33,7 @@ const UNIT_STATS = {
         move_range: 0,
         attack_range: 4,
         speed: 0,
-        attack_speed: 0.5
+        attack_speed: 1
     },
     "士兵": {
         hp: 2000,
@@ -41,7 +41,7 @@ const UNIT_STATS = {
         move_range: 1,
         attack_range: 1,
         speed: 0.8,
-        attack_speed: 0.8
+        attack_speed: 1.5
     },
     "坦克": {
         hp: 3000,
@@ -49,7 +49,7 @@ const UNIT_STATS = {
         move_range: 1,
         attack_range: 2,
         speed: 1,
-        attack_speed: 0.7
+        attack_speed: 1
     },
     "飞机": {
         hp: 2500,
@@ -57,7 +57,7 @@ const UNIT_STATS = {
         move_range: 2,
         attack_range: 3,
         speed: 2,
-        attack_speed: 1
+        attack_speed: 1.5
     },
     "大炮": {
         hp: 1500,
@@ -65,7 +65,7 @@ const UNIT_STATS = {
         move_range: 1,
         attack_range: 10,
         speed: 0.5,
-        attack_speed: 0.3
+        attack_speed: 0.5
     },
     "哥斯拉": {
         hp: 5000,
@@ -73,7 +73,7 @@ const UNIT_STATS = {
         move_range: 1,
         attack_range: 2,
         speed: 0.5,
-        attack_speed: 0.4
+        attack_speed: 1
     }
 };
 
