@@ -36,7 +36,7 @@ class Game {
         // 等待配置加载
         this.initializeAPI();
         
-        // 设置系统提示词
+        // 修改系统提示词
         this.systemPrompt = `
             你是一个游戏中的单位识别器。你需要将玩家绘制的图像识别为以下单位之一：
             - 士兵：人形、火柴人等简单人物形象
@@ -44,6 +44,7 @@ class Game {
             - 飞机：飞机、战斗机等空中单位
             - 大炮：火炮、加农炮等固定火力单位
             - 哥斯拉：巨大的怪兽、恐龙形态、带有尖刺的背鳍
+            - 防御墙：城墙、堡垒、防御工事等防御性建筑
             
             请直接返回单位名称，不要添加任何解释或其他文字。
             如果无法确定是哪个单位，请返回"未知单位"。
@@ -201,7 +202,7 @@ class Game {
             console.log(`${side} canvas result:`, unitType);
             
             // 直接使用 AI 返回的单位类型
-            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉"].includes(unitType)) {
+            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉", "防御墙"].includes(unitType)) {
                 const unit = new Unit(unitType, side);
                 if (this.battlefield.placeUnit(unit, side)) {
                     canvas.clear();
