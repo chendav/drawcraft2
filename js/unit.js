@@ -3,50 +3,24 @@ class Unit {
         this.type = type;
         this.side = side;
         
-        // 设置单位属性
-        switch(type) {
-            case '士兵':
-                this.hp = 1000;
-                this.attack = 20;
-                this.speed = 2;
-                this.range = 2;
-                break;
-            case '坦克':
-                this.hp = 2000;
-                this.attack = 40;
-                this.speed = 1;
-                this.range = 3;
-                break;
-            case '飞机':
-                this.hp = 1500;
-                this.attack = 30;
-                this.speed = 3;
-                this.range = 4;
-                break;
-            case '大炮':
-                this.hp = 1200;
-                this.attack = 50;
-                this.speed = 0;
-                this.range = 5;
-                break;
-            case '哥斯拉':
-                this.hp = 5000;
-                this.attack = 100;
-                this.speed = 0.5;
-                this.range = 2;
-                break;
-            default:
-                this.hp = 1000;
-                this.attack = 20;
-                this.speed = 1;
-                this.range = 2;
+        // 从 UNIT_STATS 获取单位属性
+        const stats = UNIT_STATS[type];
+        if (stats) {
+            this.hp = stats.hp;
+            this.attack = stats.attack;
+            this.speed = stats.speed;
+            this.range = stats.attack_range;
+        } else {
+            // 默认属性
+            this.hp = 1000;
+            this.attack = 20;
+            this.speed = 1;
+            this.range = 2;
         }
         
         // 初始生命值
         this.maxHp = this.hp;
     }
-    
-    // ... 其他方法保持不变 ...
 }
 
 // 单位属性数据配置

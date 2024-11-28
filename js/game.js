@@ -280,11 +280,11 @@ class Game {
         const rightBase = this.battlefield.getBase('right');
         
         if (leftBase) {
-            leftBaseInfo.textContent = `基地生命值: ${leftBase.hp}/1000`;
+            leftBaseInfo.textContent = `基地生命值: ${leftBase.hp}/${leftBase.maxHp}`;
         }
         
         if (rightBase) {
-            rightBaseInfo.textContent = `基地生命值: ${rightBase.hp}/1000`;
+            rightBaseInfo.textContent = `基地生命值: ${rightBase.hp}/${rightBase.maxHp}`;
         }
         
         // 检查游戏是否结束
