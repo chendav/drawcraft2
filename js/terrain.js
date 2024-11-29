@@ -98,14 +98,16 @@ class TerrainManager {
         
         // 设置图片源
         console.log('Setting terrain layer sources...');
-        Object.entries(this.terrainLayers).forEach(([type, img]) => {
-            const src = `assets/terrain/${type.toLowerCase()}_layer.png`;
-            console.log(`Loading terrain layer ${type} from: ${src}`);
-            img.src = src;
-        });
+        this.terrainLayers[TERRAIN_TYPES.PLAIN].src = 'assets/terrain/plain_layer.png';
+        this.terrainLayers[TERRAIN_TYPES.MOUNTAIN].src = 'assets/terrain/mountain_layer.png';
+        this.terrainLayers[TERRAIN_TYPES.WATER].src = 'assets/terrain/water_layer.png';
+        this.terrainLayers[TERRAIN_TYPES.FOREST].src = 'assets/terrain/forest_layer.png';
         
         // 标记是否使用备用颜色
-        this.useFallbackColors = false;
+        this.useFallbackColors = true;  // 默认使用备用颜色，直到图片加载成功
+        
+        // 加载预设地图
+        this.loadPresetMap('map1');
     }
 
     generateTerrain(basePositions) {
