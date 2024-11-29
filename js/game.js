@@ -17,8 +17,8 @@ class Game {
         // 设置按钮事件
         this.setupButtons();
         
-        // 设置游戏循环
-        this.setupGameLoop();
+        // 初始化游戏
+        this.initializeGame();
         
         // 初始化基地生命值显示
         this.leftBaseInfo = document.getElementById('leftBaseInfo');
@@ -337,6 +337,16 @@ class Game {
         this.setupGameLoop();
         
         console.log('Game reset completed');
+    }
+
+    async initializeGame() {
+        // 等待战场初始化完成
+        await this.battlefield.waitForLoad();
+        
+        // 设置游戏循环
+        this.setupGameLoop();
+        
+        console.log('Game initialization completed');
     }
 }
 

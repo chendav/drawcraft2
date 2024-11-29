@@ -33,28 +33,30 @@ class Battlefield {
             'gundam': new Image()
         };
 
-        // 添加图片加载计数器
-        this.loadedImages = 0;
-        this.totalImages = Object.keys(this.unitImages).length;
+        // 返回一个 Promise，在所有图片加载完成后解析
+        this.loadingPromise = new Promise((resolve) => {
+            this.loadedImages = 0;
+            this.totalImages = Object.keys(this.unitImages).length;
 
-        // 修改图片加载事件处理
-        Object.entries(this.unitImages).forEach(([key, img]) => {
-            img.onload = () => {
-                this.loadedImages++;
-                console.log(`Successfully loaded unit image: ${key} (${this.loadedImages}/${this.totalImages})`);
-                if (this.loadedImages === this.totalImages) {
-                    console.log('All unit images loaded successfully');
-                }
-            };
-            img.onerror = (e) => {
-                console.error(`Failed to load unit image: ${key}`, e);
-                console.log('Attempted URL:', img.src);
-                // 尝试重新加载
-                setTimeout(() => {
-                    console.log(`Retrying to load ${key}...`);
-                    img.src = img.src;
-                }, 1000);
-            };
+            Object.entries(this.unitImages).forEach(([key, img]) => {
+                img.onload = () => {
+                    this.loadedImages++;
+                    console.log(`Successfully loaded unit image: ${key} (${this.loadedImages}/${this.totalImages})`);
+                    if (this.loadedImages === this.totalImages) {
+                        console.log('All unit images loaded successfully');
+                        resolve();
+                    }
+                };
+                img.onerror = (e) => {
+                    console.error(`Failed to load unit image: ${key}`, e);
+                    console.log('Attempted URL:', img.src);
+                    // 尝试重新加载
+                    setTimeout(() => {
+                        console.log(`Retrying to load ${key}...`);
+                        img.src = img.src;
+                    }, 1000);
+                };
+            });
         });
 
         // 设置图片源
@@ -285,7 +287,7 @@ class Battlefield {
             {x: startX, y: basePos.y + 1}
         ];
         
-        // 如果初始位置都被占用，继续向外扩展
+        // 如果初始位置都被占用，继续���外扩展
         const maxTries = 10;
         let currentX = startX;
         
@@ -870,6 +872,11 @@ class Battlefield {
     // 添加新方法检查图片是否都加载完成
     isImagesLoaded() {
         return this.loadedImages === this.totalImages;
+    }
+
+    // 添加等待加载完成的方法
+    async waitForLoad() {
+        await this.loadingPromise;
     }
 }
 
