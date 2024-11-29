@@ -1,4 +1,4 @@
-export { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS, TERRAIN_EFFECTS };
+export { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS };
 
 class Unit {
     constructor(type, side) {

@@ -124,8 +124,9 @@ class Battlefield {
         console.log('Initializing bases:', {
             leftBase: leftBase,
             rightBase: rightBase,
-            type: leftBase.type,  // 确认类型名称
-            mapping: this.typeToImage["基地"]  // 确认映射
+            type: leftBase.type,
+            mapping: this.typeToImage["基地"],
+            stats: UNIT_STATS["基地"]
         });
         
         // 放置基地
