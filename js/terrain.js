@@ -68,15 +68,27 @@ class TerrainManager {
             [TERRAIN_TYPES.FOREST]: new Image()
         };
         
-        // 添加图片加载事件处理
-        Object.entries(this.terrainLayers).forEach(([type, img]) => {
-            img.onload = () => {
-                console.log(`Successfully loaded terrain layer: ${type}`);
-            };
-            img.onerror = (e) => {
-                console.error(`Failed to load terrain layer: ${type}`, e);
-                console.log('Attempted URL:', img.src);
-            };
+        // 返回一个 Promise，在所有地形图片加载完成后解析
+        this.loadingPromise = new Promise((resolve) => {
+            this.loadedLayers = 0;
+            this.totalLayers = Object.keys(this.terrainLayers).length;
+            
+            Object.entries(this.terrainLayers).forEach(([type, img]) => {
+                img.onload = () => {
+                    this.loadedLayers++;
+                    console.log(`Successfully loaded terrain layer: ${type} (${this.loadedLayers}/${this.totalLayers})`);
+                    if (this.loadedLayers === this.totalLayers) {
+                        console.log('All terrain layers loaded successfully');
+                        resolve();
+                    }
+                };
+                img.onerror = (e) => {
+                    console.error(`Failed to load terrain layer: ${type}`, e);
+                    console.log('Attempted URL:', img.src);
+                    // 使用备用颜色
+                    this.useFallbackColors = true;
+                };
+            });
         });
         
         // 设置图片源
@@ -84,11 +96,9 @@ class TerrainManager {
         this.terrainLayers[TERRAIN_TYPES.MOUNTAIN].src = 'assets/terrain/mountain_layer.png';
         this.terrainLayers[TERRAIN_TYPES.WATER].src = 'assets/terrain/water_layer.png';
         this.terrainLayers[TERRAIN_TYPES.FOREST].src = 'assets/terrain/forest_layer.png';
-
-        console.log('Attempting to load terrain layers...');
-        Object.entries(this.terrainLayers).forEach(([type, img]) => {
-            console.log(`Setting src for terrain ${type}:`, img.src);
-        });
+        
+        // 标记是否使用备用颜色
+        this.useFallbackColors = false;
     }
 
     generateTerrain(basePositions) {
@@ -129,43 +139,44 @@ class TerrainManager {
     }
 
     draw(ctx, cellSize) {
-        // 绘制每一层地形
-        Object.entries(TERRAIN_TYPES).forEach(([_, type]) => {
-            const layer = this.terrainLayers[type];
-            if (layer.complete) {
-                // 首先绘制整个地形层
-                ctx.drawImage(layer, 0, 0, this.width * cellSize, this.height * cellSize);
-                
-                // 创建一个遮罩层
-                ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-                ctx.fillRect(0, 0, this.width * cellSize, this.height * cellSize);
-                
-                // 使用 destination-out 混合模式，只在对应地形的格子上清除遮罩
-                ctx.globalCompositeOperation = 'destination-out';
-                
-                // 清除对应地形格子的遮罩
-                for (let y = 0; y < this.height; y++) {
-                    for (let x = 0; x < this.width; x++) {
-                        if (this.grid[y][x] === type) {
-                            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-                        }
-                    }
-                }
-                
-                // 恢复默认混合模式
-                ctx.globalCompositeOperation = 'source-over';
-            } else {
-                // 如果图片未加载，使用备用颜色
-                for (let y = 0; y < this.height; y++) {
-                    for (let x = 0; x < this.width; x++) {
-                        if (this.grid[y][x] === type) {
-                            ctx.fillStyle = this.getFallbackColor(type);
-                            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-                        }
-                    }
+        if (this.useFallbackColors) {
+            // 如果图片加载失败，使用备用颜色
+            for (let y = 0; y < this.height; y++) {
+                for (let x = 0; x < this.width; x++) {
+                    const terrain = this.grid[y][x];
+                    ctx.fillStyle = this.getFallbackColor(terrain);
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
                 }
             }
-        });
+        } else {
+            // 绘制每一层地形
+            Object.entries(TERRAIN_TYPES).forEach(([_, type]) => {
+                const layer = this.terrainLayers[type];
+                if (layer.complete) {
+                    // 首先绘制整个地形层
+                    ctx.drawImage(layer, 0, 0, this.width * cellSize, this.height * cellSize);
+                    
+                    // 创建一个遮罩层
+                    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+                    ctx.fillRect(0, 0, this.width * cellSize, this.height * cellSize);
+                    
+                    // 使用 destination-out 混合模式，只在对应地形的格子上清除遮罩
+                    ctx.globalCompositeOperation = 'destination-out';
+                    
+                    // 清除对应地形格子的遮罩
+                    for (let y = 0; y < this.height; y++) {
+                        for (let x = 0; x < this.width; x++) {
+                            if (this.grid[y][x] === type) {
+                                ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                            }
+                        }
+                    }
+                    
+                    // 恢复默认混合模式
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+            });
+        }
     }
 
     // 添加备用颜色方法
