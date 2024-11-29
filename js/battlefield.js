@@ -33,12 +33,14 @@ class Battlefield {
             'gundam': new Image()
         };
 
-        // 添加图片加载错误处理
+        // 添加图片加载事件处理
         Object.entries(this.unitImages).forEach(([key, img]) => {
-            img.onerror = () => {
-                console.error(`Failed to load image: ${key}`);
-                // 加载失败时使用备用图片
-                img.src = 'assets/units/default.png';
+            img.onload = () => {
+                console.log(`Successfully loaded unit image: ${key}`);
+            };
+            img.onerror = (e) => {
+                console.error(`Failed to load unit image: ${key}`, e);
+                console.log('Attempted URL:', img.src);
             };
         });
 
@@ -54,6 +56,11 @@ class Battlefield {
         this.unitImages.cavalry.src = 'assets/units/cavalry.png';
         this.unitImages.medic.src = 'assets/units/medic.png';
         this.unitImages.gundam.src = 'assets/units/gundam.png';
+
+        console.log('Attempting to load unit images...');
+        Object.entries(this.unitImages).forEach(([key, img]) => {
+            console.log(`Setting src for ${key}:`, img.src);
+        });
 
         // 单位类型到图片的映射
         this.typeToImage = {
