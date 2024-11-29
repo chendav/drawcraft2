@@ -22,6 +22,9 @@ class Battlefield {
         this.leftBasePos = {x: 0, y: Math.floor(this.height/2)};
         this.rightBasePos = {x: this.width-1, y: Math.floor(this.height/2)};
         
+        // 确保 UNIT_STATS 已经导入
+        console.log('Checking UNIT_STATS:', UNIT_STATS);
+        
         this.initializeBases();
         
         // 加载单位图片
@@ -117,6 +120,12 @@ class Battlefield {
     }
 
     initializeBases() {
+        // 创建基地单位前先检查 UNIT_STATS
+        if (!UNIT_STATS || !UNIT_STATS["基地"]) {
+            console.error('UNIT_STATS not properly loaded:', UNIT_STATS);
+            return;
+        }
+
         // 创建基地单位
         const leftBase = new Unit("基地", "left");
         const rightBase = new Unit("基地", "right");
