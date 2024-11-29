@@ -1,4 +1,4 @@
-// 单位属性数据配置
+// 先定义所有常量
 const UNIT_STATS = {
     "基地": {
         hp: 10000,
@@ -91,7 +91,6 @@ const UNIT_STATS = {
     }
 };
 
-// 单位克制关系
 const UNIT_COUNTERS = {
     "士兵": ["大炮", "医疗兵"],
     "坦克": ["飞机", "医疗兵"],
@@ -105,34 +104,32 @@ const UNIT_COUNTERS = {
     "高达": ["UFO"]
 };
 
-// 克制伤害加成
 const COUNTER_BONUS = 1.5;
 
-// 地形效果配置
 const TERRAIN_EFFECTS = {
     'plain': {
-        moveModifier: 1,    // 正常移动速度
-        attackModifier: 1,  // 正常攻击力
-        defenseModifier: 1  // 正常防御力
+        moveModifier: 1,
+        attackModifier: 1,
+        defenseModifier: 1
     },
     'mountain': {
-        moveModifier: 0.5,  // 移动速度减半
-        attackModifier: 1.2, // 攻击力提升20%
-        defenseModifier: 1.3 // 防御力提升30%
+        moveModifier: 0.5,
+        attackModifier: 1.2,
+        defenseModifier: 1.3
     },
     'forest': {
-        moveModifier: 0.8,  // 移动速度降低20%
-        attackModifier: 1,   // 正常攻击力
-        defenseModifier: 1.2 // 防御力提升20%
+        moveModifier: 0.8,
+        attackModifier: 1,
+        defenseModifier: 1.2
     },
     'water': {
-        moveModifier: 0.3,  // 大幅降低移动速度
-        attackModifier: 0.8, // 攻击力降低20%
-        defenseModifier: 0.8 // 防御力降低20%
+        moveModifier: 0.3,
+        attackModifier: 0.8,
+        defenseModifier: 0.8
     }
 };
 
-// 定义 Unit 类
+// 然后定义 Unit 类
 class Unit {
     constructor(type, side) {
         this.type = type;
@@ -160,5 +157,5 @@ class Unit {
     }
 }
 
-// 导出所有内容
+// 最后导出所有内容
 export { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS, TERRAIN_EFFECTS };
