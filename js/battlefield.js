@@ -115,6 +115,13 @@ class Battlefield {
         const leftBase = new Unit("基地", "left");
         const rightBase = new Unit("基地", "right");
         
+        console.log('Initializing bases:', {
+            leftBase: leftBase,
+            rightBase: rightBase,
+            type: leftBase.type,  // 确认类型名称
+            mapping: this.typeToImage["基地"]  // 确认映射
+        });
+        
         // 放置基地
         this.grid[this.leftBasePos.y][this.leftBasePos.x] = leftBase;
         this.grid[this.rightBasePos.y][this.rightBasePos.x] = rightBase;
@@ -152,6 +159,13 @@ class Battlefield {
         
         // 检查是否有对应的图片
         const imageKey = this.typeToImage[unit.type];
+        console.log('Drawing unit:', {
+            type: unit.type,
+            imageKey: imageKey,
+            mappings: this.typeToImage,
+            images: Object.keys(this.unitImages)
+        });
+        
         if (!imageKey) {
             console.error(`No image mapping found for unit type: ${unit.type}`);
             return;
@@ -173,7 +187,7 @@ class Battlefield {
             // 图片加载成功，绘制图片
             this.ctx.save();
             
-            // 如果是右方单位，使用蓝色色调
+            // 如果是右方单位，使用蓝色调
             if (unit.side === 'right') {
                 this.ctx.filter = 'hue-rotate(240deg)';  // 转为蓝色
             }
@@ -287,7 +301,7 @@ class Battlefield {
             {x: startX, y: basePos.y + 1}
         ];
         
-        // 如果初始位置都被占用，继续���外扩展
+        // 如果初始位置都被占用，继续外扩展
         const maxTries = 10;
         let currentX = startX;
         
