@@ -87,15 +87,22 @@ class TerrainManager {
                     console.log('Attempted URL:', img.src);
                     // 使用备用颜色
                     this.useFallbackColors = true;
+                    // 如果所有图片都加载失败，也要解析 Promise
+                    if (++this.loadedLayers === this.totalLayers) {
+                        console.log('All terrain layers attempted to load, using fallback colors');
+                        resolve();
+                    }
                 };
             });
         });
         
         // 设置图片源
-        this.terrainLayers[TERRAIN_TYPES.PLAIN].src = 'assets/terrain/plain_layer.png';
-        this.terrainLayers[TERRAIN_TYPES.MOUNTAIN].src = 'assets/terrain/mountain_layer.png';
-        this.terrainLayers[TERRAIN_TYPES.WATER].src = 'assets/terrain/water_layer.png';
-        this.terrainLayers[TERRAIN_TYPES.FOREST].src = 'assets/terrain/forest_layer.png';
+        console.log('Setting terrain layer sources...');
+        Object.entries(this.terrainLayers).forEach(([type, img]) => {
+            const src = `assets/terrain/${type.toLowerCase()}_layer.png`;
+            console.log(`Loading terrain layer ${type} from: ${src}`);
+            img.src = src;
+        });
         
         // 标记是否使用备用颜色
         this.useFallbackColors = false;
@@ -139,6 +146,17 @@ class TerrainManager {
     }
 
     draw(ctx, cellSize) {
+        console.log('Drawing terrain with:', {
+            useFallbackColors: this.useFallbackColors,
+            loadedLayers: this.loadedLayers,
+            totalLayers: this.totalLayers,
+            layerStatus: Object.entries(this.terrainLayers).map(([type, img]) => ({
+                type,
+                complete: img.complete,
+                src: img.src
+            }))
+        });
+
         if (this.useFallbackColors) {
             // 如果图片加载失败，使用备用颜色
             for (let y = 0; y < this.height; y++) {
