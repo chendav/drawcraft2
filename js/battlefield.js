@@ -33,14 +33,27 @@ class Battlefield {
             'gundam': new Image()
         };
 
-        // 添加图片加载事件处理
+        // 添加图片加载计数器
+        this.loadedImages = 0;
+        this.totalImages = Object.keys(this.unitImages).length;
+
+        // 修改图片加载事件处理
         Object.entries(this.unitImages).forEach(([key, img]) => {
             img.onload = () => {
-                console.log(`Successfully loaded unit image: ${key}`);
+                this.loadedImages++;
+                console.log(`Successfully loaded unit image: ${key} (${this.loadedImages}/${this.totalImages})`);
+                if (this.loadedImages === this.totalImages) {
+                    console.log('All unit images loaded successfully');
+                }
             };
             img.onerror = (e) => {
                 console.error(`Failed to load unit image: ${key}`, e);
                 console.log('Attempted URL:', img.src);
+                // 尝试重新加载
+                setTimeout(() => {
+                    console.log(`Retrying to load ${key}...`);
+                    img.src = img.src;
+                }, 1000);
             };
         });
 
@@ -146,6 +159,10 @@ class Battlefield {
         if (!image) {
             console.error(`No image object found for key: ${imageKey}`);
             return;
+        }
+        
+        if (!this.isImagesLoaded()) {
+            console.log(`Waiting for images to load... (${this.loadedImages}/${this.totalImages})`);
         }
         
         console.log(`Drawing unit: ${unit.type}, image key: ${imageKey}, image loaded: ${image.complete}`);
@@ -848,6 +865,11 @@ class Battlefield {
             
             return true;
         });
+    }
+
+    // 添加新方法检查图片是否都加载完成
+    isImagesLoaded() {
+        return this.loadedImages === this.totalImages;
     }
 }
 
