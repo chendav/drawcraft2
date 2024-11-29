@@ -134,3 +134,27 @@ const UNIT_COUNTERS = {
 
 // 克制伤害加成
 const COUNTER_BONUS = 1.5; 
+
+// 添加地形效果配置
+const TERRAIN_EFFECTS = {
+    'plain': {
+        moveModifier: 1,    // 正常移动速度
+        attackModifier: 1,  // 正常攻击力
+        defenseModifier: 1  // 正常防御力
+    },
+    'mountain': {
+        moveModifier: 0.5,  // 移动速度减半
+        attackModifier: 1.2, // 攻击力提升20%
+        defenseModifier: 1.3 // 防御力提升30%
+    },
+    'forest': {
+        moveModifier: 0.8,  // 移动速度降低20%
+        attackModifier: 1,   // 正常攻击力
+        defenseModifier: 1.2 // 防御力提升20%
+    },
+    'water': {
+        moveModifier: 0.3,  // 大幅降低移动速度
+        attackModifier: 0.8, // 攻击力降低20%
+        defenseModifier: 0.8 // 防御力降低20%
+    }
+};

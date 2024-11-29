@@ -1,3 +1,5 @@
+import { TerrainManager } from './terrain.js';
+
 class Battlefield {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
@@ -14,10 +16,6 @@ class Battlefield {
         this.rightBasePos = {x: this.width-1, y: Math.floor(this.height/2)};
         
         this.initializeBases();
-        
-        // 修改背景图片路径
-        this.backgroundImage = new Image();
-        this.backgroundImage.src = 'assets/background1.png';  // 修改为新的背景图片
         
         // 加载单位图片
         this.unitImages = {
@@ -83,6 +81,10 @@ class Battlefield {
         
         // 添加治疗效果列表
         this.healEffects = [];
+        
+        // 使用 TerrainManager 替代原有的地形管理
+        this.terrainManager = new TerrainManager(this.width, this.height);
+        this.terrainManager.loadPresetMap('map1');
     }
 
     initializeBases() {
@@ -99,28 +101,14 @@ class Battlefield {
         // 清空画布
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // 绘制背景
-        if (this.backgroundImage.complete) {  // 确保图片已加载
-            // 方式1：拉伸背景以适应画布
-            this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
-            
-            // 或者方式2：平铺背景
-            // const pattern = this.ctx.createPattern(this.backgroundImage, 'repeat');
-            // this.ctx.fillStyle = pattern;
-            // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        } else {
-            // 如果图片未加载完成，使用纯色背景
-            this.ctx.fillStyle = '#e0e0e0';
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        }
+        // 使用 TerrainManager 绘制地形
+        this.terrainManager.draw(this.ctx, this.cellSize);
         
         // 绘制单位
         this.drawUnits();
         
-        // 绘制攻击效果
+        // 绘制效果
         this.drawAttackEffects();
-        
-        // 绘制治疗效果
         this.drawHealEffects();
     }
 
@@ -454,7 +442,7 @@ class Battlefield {
             // 如果目标被消灭
             if (target.hp <= 0) {
                 if (target.type === "基地") {
-                    target.hp = 0;  // 确���基地生命值���会变成负数
+                    target.hp = 0;  // 确基地生命值会变成负数
                     // 不要提前返回，让游戏状态更新逻辑处理游戏结束
                 } else {
                     // 如果是普通单位被消灭，从网格中移除
@@ -623,24 +611,19 @@ class Battlefield {
         return null;
     }
 
-    isValidMove(x, y) {
-        // 检查是否在战场范围内
+    isValidMove(x, y, unit) {
+        // 基本检查
         if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
             return false;
         }
         
-        // 检查目标位置是否为空
+        // 检查目标位置是否被占用
         if (this.grid[y][x] !== null) {
             return false;
         }
         
-        // 检查是否是基地位置
-        if ((x === this.leftBasePos.x && y === this.leftBasePos.y) ||
-            (x === this.rightBasePos.x && y === this.rightBasePos.y)) {
-            return false;
-        }
-        
-        return true;
+        // 使用 TerrainManager 检查地形限制
+        return this.terrainManager.canUnitPass(unit, x, y);
     }
 
     findUnitPosition(unit) {
