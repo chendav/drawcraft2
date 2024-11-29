@@ -152,6 +152,7 @@ class TerrainManager {
             useFallbackColors: this.useFallbackColors,
             loadedLayers: this.loadedLayers,
             totalLayers: this.totalLayers,
+            grid: this.grid.map(row => row.map(cell => cell)),  // 打印整个地形网格
             layerStatus: Object.entries(this.terrainLayers).map(([type, img]) => ({
                 type,
                 complete: img.complete,
@@ -164,7 +165,12 @@ class TerrainManager {
             for (let y = 0; y < this.height; y++) {
                 for (let x = 0; x < this.width; x++) {
                     const terrain = this.grid[y][x];
-                    ctx.fillStyle = this.getFallbackColor(terrain);
+                    const color = this.getFallbackColor(terrain);
+                    console.log(`Drawing terrain at (${x}, ${y}):`, {
+                        terrain,
+                        color
+                    });
+                    ctx.fillStyle = color;
                     ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
                 }
             }
@@ -217,6 +223,7 @@ class TerrainManager {
 
     // 添加加载预设地图的方法
     loadPresetMap(mapId) {
+        console.log('Loading preset map:', mapId);
         const presetMaps = {
             'map1': [
                 // 这里定义第一张预设地图的布局
@@ -259,13 +266,22 @@ class TerrainManager {
             'f': TERRAIN_TYPES.FOREST
         };
 
+        console.log('Terrain mapping:', charToTerrain);
+
         // 加载地图
         for (let y = 0; y < this.height; y++) {
             const row = map[y];
             for (let x = 0; x < this.width; x++) {
-                this.grid[y][x] = charToTerrain[row[x]] || TERRAIN_TYPES.PLAIN;
+                const terrainType = charToTerrain[row[x]] || TERRAIN_TYPES.PLAIN;
+                console.log(`Setting terrain at (${x}, ${y}):`, {
+                    char: row[x],
+                    terrainType
+                });
+                this.grid[y][x] = terrainType;
             }
         }
+
+        console.log('Map loaded:', this.grid);
     }
 }
 
