@@ -110,43 +110,6 @@ class TerrainManager {
         this.loadPresetMap('map1');
     }
 
-    generateTerrain(basePositions) {
-        for (let y = 0; y < this.height; y++) {
-            for (let x = 0; x < this.width; x++) {
-                // 跳过基地位置
-                if (basePositions.some(pos => pos.x === x && pos.y === y)) {
-                    this.grid[y][x] = TERRAIN_TYPES.PLAIN;
-                    continue;
-                }
-                
-                // 随机生成地形
-                const rand = Math.random();
-                let accumulator = 0;
-                for (const [type, probability] of Object.entries(TERRAIN_GENERATION)) {
-                    accumulator += probability;
-                    if (rand < accumulator) {
-                        this.grid[y][x] = type;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    getTerrainAt(x, y) {
-        return this.grid[y][x];
-    }
-
-    canUnitPass(unit, x, y) {
-        const terrain = this.getTerrainAt(x, y);
-        return TERRAIN_MOVEMENT_RULES[terrain].canPass(unit);
-    }
-
-    getTerrainEffects(x, y) {
-        const terrain = this.getTerrainAt(x, y);
-        return TERRAIN_EFFECTS[terrain];
-    }
-
     draw(ctx, cellSize) {
         console.log('Drawing terrain with:', {
             useFallbackColors: this.useFallbackColors,
@@ -221,14 +184,12 @@ class TerrainManager {
         }
     }
 
-    // 添加加载预设地图的方法
+    // 修改 loadPresetMap 方法，添加调试信息
     loadPresetMap(mapId) {
         console.log('Loading preset map:', mapId);
         const presetMaps = {
             'map1': [
-                // 这里定义第一张预设地图的布局
-                // 每个数组元素代表一行，每个字符代表一个地形
-                // p: plain, m: mountain, w: water, f: forest
+                // ... 地图数据保持不变 ...
                 "ppppppppppppppppppppppppppppppp",
                 "pppppmmmmppppppppppppmmmmpppppp",
                 "pppppmmmmppppppppppppmmmmpppppw",

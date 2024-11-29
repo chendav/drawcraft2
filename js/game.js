@@ -234,7 +234,7 @@ class Game {
         const imageData = ctx.getImageData(0, 0, canvas.canvas.width, canvas.canvas.height);
         const data = imageData.data;
         
-        // 分析绘画��征
+        // 分析绘画征
         let features = {
             width: 0,
             height: 0,
@@ -322,7 +322,7 @@ class Game {
         battlefieldCanvas.height = 20 * 30;
         this.battlefield = new Battlefield('battlefieldCanvas');
         
-        // 等待战场初始化完成
+        // 等待战场初始化完��
         await this.battlefield.waitForLoad();
         
         // 重置按钮状态
