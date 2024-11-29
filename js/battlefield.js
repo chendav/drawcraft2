@@ -137,7 +137,18 @@ class Battlefield {
         
         // 检查是否有对应的图片
         const imageKey = this.typeToImage[unit.type];
+        if (!imageKey) {
+            console.error(`No image mapping found for unit type: ${unit.type}`);
+            return;
+        }
+        
         const image = this.unitImages[imageKey];
+        if (!image) {
+            console.error(`No image object found for key: ${imageKey}`);
+            return;
+        }
+        
+        console.log(`Drawing unit: ${unit.type}, image key: ${imageKey}, image loaded: ${image.complete}`);
         
         if (image && image.complete && image.naturalHeight !== 0) {
             // 图片加载成功，绘制图片
@@ -167,6 +178,7 @@ class Battlefield {
             
             this.ctx.restore();
         } else {
+            console.warn(`Image not ready for unit type: ${unit.type}, key: ${imageKey}, src: ${image.src}`);
             // 图片未加载或加载失败，使用备用显示
             const radius = this.cellSize * 0.4;
             this.ctx.beginPath();

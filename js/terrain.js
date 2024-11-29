@@ -68,11 +68,27 @@ class TerrainManager {
             [TERRAIN_TYPES.FOREST]: new Image()
         };
         
+        // 添加图片加载事件处理
+        Object.entries(this.terrainLayers).forEach(([type, img]) => {
+            img.onload = () => {
+                console.log(`Successfully loaded terrain layer: ${type}`);
+            };
+            img.onerror = (e) => {
+                console.error(`Failed to load terrain layer: ${type}`, e);
+                console.log('Attempted URL:', img.src);
+            };
+        });
+        
         // 设置图片源
         this.terrainLayers[TERRAIN_TYPES.PLAIN].src = 'assets/terrain/plain_layer.png';
         this.terrainLayers[TERRAIN_TYPES.MOUNTAIN].src = 'assets/terrain/mountain_layer.png';
         this.terrainLayers[TERRAIN_TYPES.WATER].src = 'assets/terrain/water_layer.png';
         this.terrainLayers[TERRAIN_TYPES.FOREST].src = 'assets/terrain/forest_layer.png';
+
+        console.log('Attempting to load terrain layers...');
+        Object.entries(this.terrainLayers).forEach(([type, img]) => {
+            console.log(`Setting src for terrain ${type}:`, img.src);
+        });
     }
 
     generateTerrain(basePositions) {
