@@ -45,6 +45,10 @@ class Game {
             - 大炮：火炮、加农炮等固定火力单位
             - 哥斯拉：巨大的怪兽、恐龙形态、带有尖刺的背鳍
             - 防御墙：城墙、堡垒、防御工事等防御性建筑
+            - UFO：飞碟、圆盘形飞行器、外星飞船
+            - 骑兵：骑马的士兵、骑士、马匹单位
+            - 医疗兵：医生、护士、医疗包等医疗相关形象
+            - 高达：机器人、巨型机甲、人形机械战士
             
             请直接返回单位名称，不要添加任何解释或其他文字。
             如果无法确定是哪个单位，请返回"未知单位"。
@@ -202,7 +206,7 @@ class Game {
             console.log(`${side} canvas result:`, unitType);
             
             // 直接使用 AI 返回的单位类型
-            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉", "防御墙"].includes(unitType)) {
+            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉", "防御墙", "UFO", "骑兵", "医疗兵", "高达"].includes(unitType)) {
                 const unit = new Unit(unitType, side);
                 if (this.battlefield.placeUnit(unit, side)) {
                     canvas.clear();

@@ -27,7 +27,11 @@ class Battlefield {
             'cannon': new Image(),
             'godzilla': new Image(),
             'base': new Image(),
-            'wall': new Image()
+            'wall': new Image(),
+            'ufo': new Image(),
+            'cavalry': new Image(),
+            'medic': new Image(),
+            'gundam': new Image()
         };
 
         // 设置图源
@@ -38,6 +42,10 @@ class Battlefield {
         this.unitImages.godzilla.src = 'assets/units/godzilla.png';
         this.unitImages.base.src = 'assets/units/base.png';  // 设置基地图片路径
         this.unitImages.wall.src = 'assets/units/wall.png';  // 需要添加防御墙图片
+        this.unitImages.ufo.src = 'assets/units/ufo.png';  // 需要添加UFO图片
+        this.unitImages.cavalry.src = 'assets/units/cavalry.png';
+        this.unitImages.medic.src = 'assets/units/medic.png';
+        this.unitImages.gundam.src = 'assets/units/gundam.png';
 
         // 单位类型到图片的映射
         this.typeToImage = {
@@ -47,7 +55,11 @@ class Battlefield {
             '大炮': 'cannon',
             '哥斯拉': 'godzilla',
             '基地': 'base',
-            '防御墙': 'wall'
+            '防御墙': 'wall',
+            'UFO': 'ufo',
+            '骑兵': 'cavalry',
+            '医疗兵': 'medic',
+            '高达': 'gundam'
         };
         
         // 为每个单位添加独立的移动时间记录
@@ -59,6 +71,9 @@ class Battlefield {
         
         // 添加攻击效果列表
         this.attackEffects = [];
+        
+        // 添加治疗效果列表
+        this.healEffects = [];
     }
 
     initializeBases() {
@@ -95,6 +110,9 @@ class Battlefield {
         
         // 绘制攻击效果
         this.drawAttackEffects();
+        
+        // 绘制治疗效果
+        this.drawHealEffects();
     }
 
     drawUnits() {
@@ -244,7 +262,7 @@ class Battlefield {
                 }
             }
             
-            // 如果当前列都满了，移动到下一列
+            // 如果当前列都满了，动到下一列
             if (side === 'left') {
                 currentX++;  // 左方向右扩展
                 if (currentX >= this.width / 2) break;  // 不超过中线
@@ -284,7 +302,7 @@ class Battlefield {
     }
 
     getBase(side) {
-        // 返回指定方的基地
+        // 返回指定方的基
         if (side === 'left') {
             return this.grid[this.leftBasePos.y][this.leftBasePos.x];
         } else if (side === 'right') {
@@ -364,66 +382,81 @@ class Battlefield {
     }
 
     findNearestEnemyInRange(pos, unit) {
-        let nearestEnemy = null;
+        let nearestTarget = null;
         let minDistance = Infinity;
 
-        // 遍历所有格子寻找敌方单位
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 const target = this.grid[y][x];
-                if (target && target.side !== unit.side) {
-                    const distance = Math.sqrt(
-                        Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2)
-                    );
-                    
-                    // 使用 unit.range 而不是 unit.attack_range
-                    if (distance <= unit.range && distance < minDistance) {
-                        minDistance = distance;
-                        nearestEnemy = {
-                            unit: target,
-                            pos: {x, y},
-                            distance: distance
-                        };
+                if (target) {
+                    // 医疗兵寻找受伤的友军，其他单位寻找敌人
+                    if ((unit.type === "医疗兵" && target.side === unit.side && target.hp < target.maxHp) ||
+                        (unit.type !== "医疗兵" && target.side !== unit.side)) {
+                        
+                        const distance = Math.sqrt(
+                            Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2)
+                        );
+                        
+                        if (distance <= unit.range && distance < minDistance) {
+                            minDistance = distance;
+                            nearestTarget = {
+                                unit: target,
+                                pos: {x, y},
+                                distance: distance
+                            };
+                        }
                     }
                 }
             }
         }
 
-        return nearestEnemy;
+        return nearestTarget;
     }
 
     performAttack(attacker, target) {
-        // 计算伤害
-        let damage = attacker.attack;
-        
-        // 检查克制关系
-        if (UNIT_COUNTERS[attacker.type]?.includes(target.type)) {
-            damage *= COUNTER_BONUS;
-        }
-        
-        // 创建攻击效果
-        this.createAttackEffect(attacker, target, damage);
-        
-        // 应用伤害
-        target.hp -= damage;
-        
-        // 如果目标被消灭
-        if (target.hp <= 0) {
-            if (target.type === "基地") {
-                target.hp = 0;  // 确保基地生命值不会变成负数
-                // 不要提前返回，让游戏状态更新逻辑处理游戏结束
-            } else {
-                // 如果是普通单位被消灭，从网格中移除
-                const targetPos = this.findUnitPosition(target);
-                if (targetPos) {
-                    this.grid[targetPos.y][targetPos.x] = null;
-                    this.unitPaths.delete(target);  // 清理路线记录
+        // 如果是医疗兵且目标是友方单位，进行治疗
+        if (attacker.type === "医疗兵" && target.side === attacker.side) {
+            // 计算治疗量
+            const healAmount = UNIT_STATS["医疗兵"].heal_power;
+            
+            // 只有当目标生命值未满时才进行治疗
+            if (target.hp < target.maxHp) {
+                // 应用治疗
+                target.hp = Math.min(target.hp + healAmount, target.maxHp);
+                
+                // 创建治疗效果
+                this.createHealEffect(attacker, target, healAmount);
+                
+                console.log(`${attacker.type} healed ${target.type}, amount: ${healAmount}, target HP: ${target.hp}`);
+            }
+        } else {
+            // 原有的攻击逻辑
+            let damage = attacker.attack;
+            if (UNIT_COUNTERS[attacker.type]?.includes(target.type)) {
+                damage *= COUNTER_BONUS;
+            }
+            
+            this.createAttackEffect(attacker, target, damage);
+            target.hp -= damage;
+            
+            // 如果目标被消灭
+            if (target.hp <= 0) {
+                if (target.type === "基地") {
+                    target.hp = 0;  // 确保基地生命值不会变成负数
+                    // 不要提前返回，让游戏状态更新逻辑处理游戏结束
+                } else {
+                    // 如果是普通单位被消灭，从网格中移除
+                    const targetPos = this.findUnitPosition(target);
+                    if (targetPos) {
+                        this.grid[targetPos.y][targetPos.x] = null;
+                        this.unitPaths.delete(target);  // 清理路线记录
+                    }
                 }
             }
+            
+            // 打印调试信息
+            console.log(`${attacker.type} attacked ${target.type}, damage: ${damage}, target HP: ${target.hp}`);
         }
-        
-        // 打印调试信息
-        console.log(`${attacker.type} attacked ${target.type}, damage: ${damage}, target HP: ${target.hp}`);
     }
 
     moveTowardsTarget(unit, currentPos, targetPos) {
@@ -728,6 +761,77 @@ class Battlefield {
             this.ctx.restore();
             
             return true; // 保留未完成的效果
+        });
+    }
+
+    // 添加新方法：创建治疗效果
+    createHealEffect(healer, target, amount) {
+        const healerPos = this.findUnitPosition(healer);
+        const targetPos = this.findUnitPosition(target);
+        
+        if (!healerPos || !targetPos) return;
+        
+        this.healEffects.push({
+            startX: healerPos.x * this.cellSize + this.cellSize/2,
+            startY: healerPos.y * this.cellSize + this.cellSize/2,
+            endX: targetPos.x * this.cellSize + this.cellSize/2,
+            endY: targetPos.y * this.cellSize + this.cellSize/2,
+            progress: 0,
+            amount: amount,
+            startTime: Date.now()
+        });
+    }
+
+    // 添加新方法：绘制治疗效果
+    drawHealEffects() {
+        const currentTime = Date.now();
+        const effectDuration = 500;
+        
+        this.healEffects = this.healEffects.filter(effect => {
+            const elapsed = currentTime - effect.startTime;
+            effect.progress = elapsed / effectDuration;
+            
+            if (effect.progress >= 1) return false;
+            
+            this.ctx.save();
+            
+            // 设置治疗效果样式（绿色）
+            this.ctx.strokeStyle = `rgba(0, 255, 0, ${1 - effect.progress})`;
+            this.ctx.lineWidth = 2;
+            
+            // 绘制治疗线
+            this.ctx.beginPath();
+            this.ctx.moveTo(effect.startX, effect.startY);
+            
+            // 使用贝塞尔曲线创建治疗效果
+            const controlX = (effect.startX + effect.endX) / 2;
+            const controlY = Math.min(effect.startY, effect.endY) - 30;
+            
+            this.ctx.quadraticCurveTo(
+                controlX,
+                controlY,
+                effect.endX,
+                effect.endY
+            );
+            
+            this.ctx.stroke();
+            
+            // 绘制治疗数字（绿色）
+            this.ctx.fillStyle = `rgba(0, 255, 0, ${1 - effect.progress})`;
+            this.ctx.font = 'bold 16px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            
+            const textY = effect.endY - (effect.progress * 30);
+            this.ctx.fillText(
+                `+${Math.round(effect.amount)}`,
+                effect.endX,
+                textY
+            );
+            
+            this.ctx.restore();
+            
+            return true;
         });
     }
 } 
