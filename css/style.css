@@ -6,23 +6,26 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 .game-container {
     display: flex;
     justify-content: space-between;
     max-width: 1400px;
-    margin: 20px auto;
+    margin: 60px auto 20px;
     padding: 20px;
+    width: 100%;
 }
 
 .game-title {
     text-align: center;
     color: #333;
-    margin: 30px 0;
+    margin: 40px 0;
     font-size: 2.5em;
     font-weight: bold;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    width: 100%;
 }
 
 .player-section {
