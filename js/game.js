@@ -210,7 +210,7 @@ class Game {
             console.log(`${side} canvas result:`, unitType);
             
             // 直接用 AI 返回的单位类型
-            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉", "防��墙", "UFO", "骑兵", "医疗兵", "高达"].includes(unitType)) {
+            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉", "防御墙", "UFO", "骑兵", "医疗兵", "高达"].includes(unitType)) {
                 const unit = new Unit(unitType, side);
                 if (this.battlefield.placeUnit(unit, side)) {
                     canvas.clear();
@@ -246,7 +246,7 @@ class Game {
         };
         
         // 实现特征分析逻辑
-        // ... 分析像素数据，���取特征
+        // ... 分析像素数据，取特征
         
         return features;
     }
@@ -289,7 +289,7 @@ class Game {
         const rightBase = this.battlefield.getBase('right');
         
         if (leftBase) {
-            leftBaseInfo.textContent = `基��生命值: ${leftBase.hp}/${leftBase.maxHp}`;
+            leftBaseInfo.textContent = `基地生命值: ${leftBase.hp}/${leftBase.maxHp}`;
         }
         
         if (rightBase) {
@@ -340,9 +340,7 @@ class Game {
     }
 }
 
-// 当页面加载完成时启动游戏
-window.onload = () => {
-    const game = new Game();
-};
+// 导出Game类
+export { Game };
 
-export { game }; 
+// 创建一个新文件 main.js 来初始化游戏 
