@@ -1,4 +1,5 @@
 import { TerrainManager } from './terrain.js';
+import { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS } from './unit.js';
 
 class Battlefield {
     constructor(canvasId) {
@@ -829,4 +830,7 @@ class Battlefield {
             return true;
         });
     }
-} 
+}
+
+// 在文件末尾添加导出
+export { Battlefield }; 

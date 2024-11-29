@@ -1,3 +1,7 @@
+import { DrawingCanvas } from './canvas.js';
+import { Battlefield } from './battlefield.js';
+import { Unit } from './unit.js';
+
 class Game {
     constructor() {
         // 初始化画布
@@ -205,8 +209,8 @@ class Game {
             const unitType = result.choices[0].message.content.trim();
             console.log(`${side} canvas result:`, unitType);
             
-            // 直接��用 AI 返回的单位类型
-            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉", "防御墙", "UFO", "骑兵", "医疗兵", "高达"].includes(unitType)) {
+            // 直接用 AI 返回的单位类型
+            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉", "防��墙", "UFO", "骑兵", "医疗兵", "高达"].includes(unitType)) {
                 const unit = new Unit(unitType, side);
                 if (this.battlefield.placeUnit(unit, side)) {
                     canvas.clear();
@@ -242,7 +246,7 @@ class Game {
         };
         
         // 实现特征分析逻辑
-        // ... 分析像素数据，提取特征
+        // ... 分析像素数据，���取特征
         
         return features;
     }
@@ -285,7 +289,7 @@ class Game {
         const rightBase = this.battlefield.getBase('right');
         
         if (leftBase) {
-            leftBaseInfo.textContent = `基地生命值: ${leftBase.hp}/${leftBase.maxHp}`;
+            leftBaseInfo.textContent = `基��生命值: ${leftBase.hp}/${leftBase.maxHp}`;
         }
         
         if (rightBase) {
@@ -339,4 +343,6 @@ class Game {
 // 当页面加载完成时启动游戏
 window.onload = () => {
     const game = new Game();
-}; 
+};
+
+export { game }; 

@@ -66,7 +66,14 @@ class TerrainManager {
         const images = {};
         Object.values(TERRAIN_TYPES).forEach(type => {
             images[type] = new Image();
+            images[type].onerror = () => {
+                console.error(`Failed to load terrain image: ${type}`);
+            };
+            images[type].onload = () => {
+                console.log(`Successfully loaded terrain image: ${type}`);
+            };
             images[type].src = `assets/terrain/${type}.png`;
+            console.log(`Attempting to load terrain image: ${type} from ${images[type].src}`);
         });
         return images;
     }
@@ -113,16 +120,45 @@ class TerrainManager {
             for (let x = 0; x < this.width; x++) {
                 const terrain = this.grid[y][x];
                 const image = this.terrainImages[terrain];
-                if (image && image.complete) {
-                    ctx.drawImage(
-                        image,
-                        x * cellSize,
-                        y * cellSize,
-                        cellSize,
-                        cellSize
-                    );
+                
+                if (!image) {
+                    console.error(`No image found for terrain type: ${terrain}`);
+                    ctx.fillStyle = this.getFallbackColor(terrain);
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    continue;
                 }
+                
+                if (!image.complete) {
+                    console.warn(`Image not yet loaded for terrain: ${terrain}`);
+                    ctx.fillStyle = this.getFallbackColor(terrain);
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    continue;
+                }
+                
+                ctx.drawImage(
+                    image,
+                    x * cellSize,
+                    y * cellSize,
+                    cellSize,
+                    cellSize
+                );
             }
+        }
+    }
+
+    // 添加备用颜色方法
+    getFallbackColor(terrain) {
+        switch (terrain) {
+            case TERRAIN_TYPES.PLAIN:
+                return '#90EE90';  // 浅绿色
+            case TERRAIN_TYPES.MOUNTAIN:
+                return '#808080';  // 灰色
+            case TERRAIN_TYPES.WATER:
+                return '#4169E1';  // 蓝色
+            case TERRAIN_TYPES.FOREST:
+                return '#228B22';  // 深绿色
+            default:
+                return '#FFFFFF';  // 白色
         }
     }
 
@@ -181,10 +217,4 @@ class TerrainManager {
 }
 
 // 导出
-export { 
-    TerrainManager, 
-    TERRAIN_TYPES, 
-    TERRAIN_EFFECTS, 
-    TERRAIN_GENERATION, 
-    TERRAIN_MOVEMENT_RULES 
-}; 
+export { TerrainManager, TERRAIN_TYPES }; 

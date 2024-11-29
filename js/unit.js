@@ -1,3 +1,5 @@
+export { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS, TERRAIN_EFFECTS };
+
 class Unit {
     constructor(type, side) {
         this.type = type;
