@@ -205,7 +205,7 @@ class Game {
             const unitType = result.choices[0].message.content.trim();
             console.log(`${side} canvas result:`, unitType);
             
-            // 直接使用 AI 返回的单位类型
+            // 直接��用 AI 返回的单位类型
             if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉", "防御墙", "UFO", "骑兵", "医疗兵", "高达"].includes(unitType)) {
                 const unit = new Unit(unitType, side);
                 if (this.battlefield.placeUnit(unit, side)) {

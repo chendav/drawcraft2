@@ -34,15 +34,24 @@ class Battlefield {
             'gundam': new Image()
         };
 
-        // 设置图源
+        // 添加图片加载错误处理
+        Object.entries(this.unitImages).forEach(([key, img]) => {
+            img.onerror = () => {
+                console.error(`Failed to load image: ${key}`);
+                // 加载失败时使用备用图片
+                img.src = 'assets/units/default.png';
+            };
+        });
+
+        // 设置图片源
         this.unitImages.soldier.src = 'assets/units/soldier.png';
         this.unitImages.tank.src = 'assets/units/tank.png';
         this.unitImages.plane.src = 'assets/units/plane.png';
         this.unitImages.cannon.src = 'assets/units/cannon.png';
         this.unitImages.godzilla.src = 'assets/units/godzilla.png';
-        this.unitImages.base.src = 'assets/units/base.png';  // 设置基地图片路径
-        this.unitImages.wall.src = 'assets/units/wall.png';  // 需要添加防御墙图片
-        this.unitImages.ufo.src = 'assets/units/ufo.png';  // 需要添加UFO图片
+        this.unitImages.base.src = 'assets/units/base.png';
+        this.unitImages.wall.src = 'assets/units/wall.png';
+        this.unitImages.ufo.src = 'assets/units/ufo.png';
         this.unitImages.cavalry.src = 'assets/units/cavalry.png';
         this.unitImages.medic.src = 'assets/units/medic.png';
         this.unitImages.gundam.src = 'assets/units/gundam.png';
@@ -131,9 +140,11 @@ class Battlefield {
         const centerY = y * this.cellSize;
         
         // 检查是否有对应的图片
-        const image = this.unitImages[this.typeToImage[unit.type]];
-        if (image) {
-            // 绘制图片
+        const imageKey = this.typeToImage[unit.type];
+        const image = this.unitImages[imageKey];
+        
+        if (image && image.complete && image.naturalHeight !== 0) {
+            // 图片加载成功，绘制图片
             this.ctx.save();
             
             // 如果是右方单位，使用蓝色色调
@@ -160,7 +171,7 @@ class Battlefield {
             
             this.ctx.restore();
         } else {
-            // 如果没有图片，使用备用的圆形显示
+            // 图片未加载或加载失败，使用备用显示
             const radius = this.cellSize * 0.4;
             this.ctx.beginPath();
             this.ctx.arc(
@@ -190,6 +201,7 @@ class Battlefield {
                 this.cellSize,
                 unit
             );
+            console.warn(`Image not ready for unit type: ${unit.type}, using fallback display`);
         }
     }
 
