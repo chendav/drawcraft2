@@ -59,23 +59,20 @@ class TerrainManager {
         this.width = width;
         this.height = height;
         this.grid = Array(height).fill().map(() => Array(width).fill(TERRAIN_TYPES.PLAIN));
-        this.terrainImages = this.loadTerrainImages();
-    }
-
-    loadTerrainImages() {
-        const images = {};
-        Object.values(TERRAIN_TYPES).forEach(type => {
-            images[type] = new Image();
-            images[type].onerror = () => {
-                console.error(`Failed to load terrain image: ${type}`);
-            };
-            images[type].onload = () => {
-                console.log(`Successfully loaded terrain image: ${type}`);
-            };
-            images[type].src = `assets/terrain/${type}.png`;
-            console.log(`Attempting to load terrain image: ${type} from ${images[type].src}`);
-        });
-        return images;
+        
+        // 加载四张完整的地形图
+        this.terrainLayers = {
+            [TERRAIN_TYPES.PLAIN]: new Image(),
+            [TERRAIN_TYPES.MOUNTAIN]: new Image(),
+            [TERRAIN_TYPES.WATER]: new Image(),
+            [TERRAIN_TYPES.FOREST]: new Image()
+        };
+        
+        // 设置图片源
+        this.terrainLayers[TERRAIN_TYPES.PLAIN].src = 'assets/terrain/plain_layer.png';
+        this.terrainLayers[TERRAIN_TYPES.MOUNTAIN].src = 'assets/terrain/mountain_layer.png';
+        this.terrainLayers[TERRAIN_TYPES.WATER].src = 'assets/terrain/water_layer.png';
+        this.terrainLayers[TERRAIN_TYPES.FOREST].src = 'assets/terrain/forest_layer.png';
     }
 
     generateTerrain(basePositions) {
@@ -116,34 +113,43 @@ class TerrainManager {
     }
 
     draw(ctx, cellSize) {
-        for (let y = 0; y < this.height; y++) {
-            for (let x = 0; x < this.width; x++) {
-                const terrain = this.grid[y][x];
-                const image = this.terrainImages[terrain];
+        // 绘制每一层地形
+        Object.entries(TERRAIN_TYPES).forEach(([_, type]) => {
+            const layer = this.terrainLayers[type];
+            if (layer.complete) {
+                // 首先绘制整个地形层
+                ctx.drawImage(layer, 0, 0, this.width * cellSize, this.height * cellSize);
                 
-                if (!image) {
-                    console.error(`No image found for terrain type: ${terrain}`);
-                    ctx.fillStyle = this.getFallbackColor(terrain);
-                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-                    continue;
+                // 创建一个遮罩层
+                ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+                ctx.fillRect(0, 0, this.width * cellSize, this.height * cellSize);
+                
+                // 使用 destination-out 混合模式，只在对应地形的格子上清除遮罩
+                ctx.globalCompositeOperation = 'destination-out';
+                
+                // 清除对应地形格子的遮罩
+                for (let y = 0; y < this.height; y++) {
+                    for (let x = 0; x < this.width; x++) {
+                        if (this.grid[y][x] === type) {
+                            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                        }
+                    }
                 }
                 
-                if (!image.complete) {
-                    console.warn(`Image not yet loaded for terrain: ${terrain}`);
-                    ctx.fillStyle = this.getFallbackColor(terrain);
-                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-                    continue;
+                // 恢复默认混合模式
+                ctx.globalCompositeOperation = 'source-over';
+            } else {
+                // 如果图片未加载，使用备用颜色
+                for (let y = 0; y < this.height; y++) {
+                    for (let x = 0; x < this.width; x++) {
+                        if (this.grid[y][x] === type) {
+                            ctx.fillStyle = this.getFallbackColor(type);
+                            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                        }
+                    }
                 }
-                
-                ctx.drawImage(
-                    image,
-                    x * cellSize,
-                    y * cellSize,
-                    cellSize,
-                    cellSize
-                );
             }
-        }
+        });
     }
 
     // 添加备用颜色方法
