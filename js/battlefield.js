@@ -1,4 +1,10 @@
-import { TerrainManager } from './terrain.js';
+import { 
+    TerrainManager, 
+    TERRAIN_TYPES,
+    TERRAIN_EFFECTS,
+    TERRAIN_GENERATION,
+    TERRAIN_MOVEMENT_RULES 
+} from './terrain.js';
 import { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS } from './unit.js';
 
 class Battlefield {

@@ -285,5 +285,11 @@ class TerrainManager {
     }
 }
 
-// 导出
-export { TerrainManager, TERRAIN_TYPES }; 
+// 导出所有需要的常量和类
+export { 
+    TerrainManager, 
+    TERRAIN_TYPES,
+    TERRAIN_EFFECTS,
+    TERRAIN_GENERATION,
+    TERRAIN_MOVEMENT_RULES 
+}; 
