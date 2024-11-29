@@ -15,9 +15,9 @@ class Battlefield {
         
         this.initializeBases();
         
-        // 添加背景图片
+        // 修改背景图片路径
         this.backgroundImage = new Image();
-        this.backgroundImage.src = 'assets/background.png';  // 确保有这个图片
+        this.backgroundImage.src = 'assets/background1.png';  // 修改为新的背景图片
         
         // 加载单位图片
         this.unitImages = {
@@ -454,7 +454,7 @@ class Battlefield {
             // 如果目标被消灭
             if (target.hp <= 0) {
                 if (target.type === "基地") {
-                    target.hp = 0;  // 确保基地生命值不会变成负数
+                    target.hp = 0;  // 确���基地生命值���会变成负数
                     // 不要提前返回，让游戏状态更新逻辑处理游戏结束
                 } else {
                     // 如果是普通单位被消灭，从网格中移除
