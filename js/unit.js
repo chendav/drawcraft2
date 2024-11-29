@@ -1,5 +1,4 @@
-export { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS };
-
+// 先定义所有常量和类
 class Unit {
     constructor(type, side) {
         this.type = type;
@@ -135,9 +134,9 @@ const UNIT_COUNTERS = {
 };
 
 // 克制伤害加成
-const COUNTER_BONUS = 1.5; 
+const COUNTER_BONUS = 1.5;
 
-// 添加地形效果配置
+// 地形效果配置
 const TERRAIN_EFFECTS = {
     'plain': {
         moveModifier: 1,    // 正常移动速度
@@ -160,3 +159,6 @@ const TERRAIN_EFFECTS = {
         defenseModifier: 0.8 // 防御力降低20%
     }
 };
+
+// 最后才导出所有内容
+export { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS, TERRAIN_EFFECTS };
