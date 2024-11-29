@@ -1,31 +1,3 @@
-// 先定义所有常量和类
-class Unit {
-    constructor(type, side) {
-        this.type = type;
-        this.side = side;
-        
-        // 从 UNIT_STATS 获取单位属性
-        const stats = UNIT_STATS[type];
-        if (stats) {
-            this.hp = stats.hp;
-            this.attack = stats.attack;
-            this.speed = stats.speed;
-            this.range = stats.attack_range;
-            this.attack_speed = stats.attack_speed;
-        } else {
-            // 默认属性
-            this.hp = 1000;
-            this.attack = 20;
-            this.speed = 1;
-            this.range = 2;
-            this.attack_speed = 1;
-        }
-        
-        // 初始生命值
-        this.maxHp = this.hp;
-    }
-}
-
 // 单位属性数据配置
 const UNIT_STATS = {
     "基地": {
@@ -160,5 +132,33 @@ const TERRAIN_EFFECTS = {
     }
 };
 
-// 最后才导出所有内容
+// 定义 Unit 类
+class Unit {
+    constructor(type, side) {
+        this.type = type;
+        this.side = side;
+        
+        // 从 UNIT_STATS 获取单位属性
+        const stats = UNIT_STATS[type];
+        if (stats) {
+            this.hp = stats.hp;
+            this.attack = stats.attack;
+            this.speed = stats.speed;
+            this.range = stats.attack_range;
+            this.attack_speed = stats.attack_speed;
+        } else {
+            // 默认属性
+            this.hp = 1000;
+            this.attack = 20;
+            this.speed = 1;
+            this.range = 2;
+            this.attack_speed = 1;
+        }
+        
+        // 初始生命值
+        this.maxHp = this.hp;
+    }
+}
+
+// 导出所有内容
 export { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS, TERRAIN_EFFECTS };
