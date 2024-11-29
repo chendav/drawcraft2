@@ -17,8 +17,8 @@ class Game {
         // 设置按钮事件
         this.setupButtons();
         
-        // 初始化游戏
-        this.initializeGame();
+        // 初始化游戏 - 这里应该等待图片加载完成
+        this.initializeGame();  // 这是一个异步方法
         
         // 初始化基地生命值显示
         this.leftBaseInfo = document.getElementById('leftBaseInfo');
@@ -234,7 +234,7 @@ class Game {
         const imageData = ctx.getImageData(0, 0, canvas.canvas.width, canvas.canvas.height);
         const data = imageData.data;
         
-        // 分析绘画特征
+        // 分析绘画��征
         let features = {
             width: 0,
             height: 0,
@@ -311,23 +311,26 @@ class Game {
         this.resetGame();
     }
 
-    resetGame() {
+    async resetGame() {
         // 重置画布
         this.leftCanvas.clear();
         this.rightCanvas.clear();
         
         // 重置战场
         const battlefieldCanvas = document.getElementById('battlefieldCanvas');
-        battlefieldCanvas.width = 30 * 30;  // 30列 * 30像素
-        battlefieldCanvas.height = 20 * 30;  // 20行 * 30像素
+        battlefieldCanvas.width = 30 * 30;
+        battlefieldCanvas.height = 20 * 30;
         this.battlefield = new Battlefield('battlefieldCanvas');
+        
+        // 等待战场初始化完成
+        await this.battlefield.waitForLoad();
         
         // 重置按钮状态
         this.cooldowns.left.lastClick = 0;
         this.cooldowns.right.lastClick = 0;
         document.getElementById('leftConfirm').disabled = false;
         document.getElementById('rightConfirm').disabled = false;
-        document.getElementById('leftConfirm').textContent = '确';
+        document.getElementById('leftConfirm').textContent = '确认';
         document.getElementById('rightConfirm').textContent = '确认';
         
         // 重置游戏状态
@@ -340,13 +343,22 @@ class Game {
     }
 
     async initializeGame() {
-        // 等待战场初始化完成
-        await this.battlefield.waitForLoad();
-        
-        // 设置游戏循环
-        this.setupGameLoop();
-        
-        console.log('Game initialization completed');
+        try {
+            console.log('Waiting for battlefield initialization...');
+            await this.battlefield.waitForLoad();
+            console.log('Battlefield initialization completed');
+            
+            // 等待 API 初始化
+            await this.initializeAPI();
+            console.log('API initialization completed');
+            
+            // 设置游戏循环
+            this.setupGameLoop();
+            
+            console.log('Game initialization completed');
+        } catch (error) {
+            console.error('Game initialization failed:', error);
+        }
     }
 }
 
