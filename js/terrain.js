@@ -163,7 +163,7 @@ class TerrainManager {
     getFallbackColor(terrain) {
         switch (terrain) {
             case TERRAIN_TYPES.PLAIN:
-                return '#90EE90';  // 浅绿色
+                return '#FFFFFF';  // 纯白色
             case TERRAIN_TYPES.MOUNTAIN:
                 return '#808080';  // 灰色
             case TERRAIN_TYPES.WATER:
