@@ -140,11 +140,22 @@ class Game {
 
     setupGameLoop() {
         const gameLoop = () => {
-            this.battlefield.draw();
-            this.updateBaseInfo();
-            this.battlefield.updateUnits();
-            requestAnimationFrame(gameLoop);
+            if (!this.isGameOver) {
+                // 更新游戏状态
+                this.battlefield.updateUnits();
+                
+                // 绘制游戏画面
+                this.battlefield.draw();
+                
+                // 更新基地信息
+                this.updateBaseInfo();
+                
+                // 继续下一帧
+                requestAnimationFrame(gameLoop);
+            }
         };
+        
+        // 开始游戏循环
         gameLoop();
     }
 
@@ -322,7 +333,7 @@ class Game {
         battlefieldCanvas.height = 20 * 30;
         this.battlefield = new Battlefield('battlefieldCanvas');
         
-        // 等待战场初始化完��
+        // 等待战场初始化完
         await this.battlefield.waitForLoad();
         
         // 重置按钮状态
