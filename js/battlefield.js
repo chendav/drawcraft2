@@ -760,6 +760,7 @@ class Battlefield {
         await this.loadingPromise;
     }
 
+    // 添加绘制相关的方法
     draw() {
         // 清空画布
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -852,6 +853,44 @@ class Battlefield {
                 this.cellSize,
                 unit
             );
+        }
+    }
+
+    drawHealthBar(x, y, width, unit) {
+        const height = 4;  // 血条高度
+        const padding = 1;  // 血条边框padding
+        
+        // 绘制血条背景（黑色边框）
+        this.ctx.fillStyle = 'black';
+        this.ctx.fillRect(x, y, width, height);
+        
+        // 绘制血条底色（红色）
+        this.ctx.fillStyle = 'red';
+        this.ctx.fillRect(x + padding, y + padding, width - padding * 2, height - padding * 2);
+        
+        // 计算当前生命值比例
+        const healthRatio = unit.hp / unit.maxHp;
+        
+        // 绘制当前生命值（绿色）
+        this.ctx.fillStyle = this.getHealthColor(healthRatio);
+        this.ctx.fillRect(
+            x + padding,
+            y + padding,
+            (width - padding * 2) * healthRatio,
+            height - padding * 2
+        );
+    }
+
+    getHealthColor(ratio) {
+        if (ratio > 0.5) {
+            // 血量大于50%时显示绿色
+            return '#00ff00';
+        } else if (ratio > 0.25) {
+            // 血量大于25%时显示黄色
+            return '#ffff00';
+        } else {
+            // 血量低于25%时显示红色
+            return '#ff0000';
         }
     }
 }
