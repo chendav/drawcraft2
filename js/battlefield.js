@@ -387,163 +387,118 @@ class Battlefield {
         }
     }
 
-    moveTowardsTarget(unit, currentPos, targetPos) {
-        const pathInfo = this.unitPaths.get(unit);
-        if (!pathInfo) return;
-
-        // 检查是否已经接近目标基地
-        const distanceToTarget = Math.sqrt(
-            Math.pow(targetPos.x - currentPos.x, 2) + 
-            Math.pow(targetPos.y - currentPos.y, 2)
-        );
-
-        // 如果距离目标基地较远，按照预定路线移动
-        if (distanceToTarget > 5) {  // 当距离大于5格时，按预定路线移动
-            // 首先移动到指定路线的Y坐标
-            if (Math.abs(currentPos.y - pathInfo.targetY) > 1) {
-                // 需要先调整Y坐标到指定路线
-                const dy = Math.sign(pathInfo.targetY - currentPos.y);
-                const newY = currentPos.y + dy;
-                if (this.isValidMove(currentPos.x, newY, unit)) {
-                    this.grid[currentPos.y][currentPos.x] = null;
-                    this.grid[newY][currentPos.x] = unit;
-                    return;
+    // 添加 A* 寻路算法
+    findPath(startPos, targetPos, unit) {
+        const openSet = new Set();
+        const closedSet = new Set();
+        const cameFrom = new Map();
+        const gScore = new Map();
+        const fScore = new Map();
+        
+        // 将坐标转换为字符串作为键
+        const posToKey = (pos) => `${pos.x},${pos.y}`;
+        const keyToPos = (key) => {
+            const [x, y] = key.split(',').map(Number);
+            return {x, y};
+        };
+        
+        const startKey = posToKey(startPos);
+        openSet.add(startKey);
+        gScore.set(startKey, 0);
+        fScore.set(startKey, this.heuristic(startPos, targetPos));
+        
+        while (openSet.size > 0) {
+            // 找到 f 值最小的节点
+            let currentKey = null;
+            let lowestF = Infinity;
+            for (const key of openSet) {
+                const f = fScore.get(key);
+                if (f < lowestF) {
+                    lowestF = f;
+                    currentKey = key;
                 }
             }
-
-            // 在正确的Y坐标上后，向目标水平移动
-            const dx = Math.sign(targetPos.x - currentPos.x);
-            if (dx !== 0) {
-                const newX = currentPos.x + dx;
-                if (this.isValidMove(newX, currentPos.y, unit)) {
-                    this.grid[currentPos.y][currentPos.x] = null;
-                    this.grid[currentPos.y][newX] = unit;
-                    return;
+            
+            const current = keyToPos(currentKey);
+            
+            // 如果到达目标
+            if (current.x === targetPos.x && current.y === targetPos.y) {
+                return this.reconstructPath(cameFrom, currentKey);
+            }
+            
+            openSet.delete(currentKey);
+            closedSet.add(currentKey);
+            
+            // 检查相邻的格子
+            const neighbors = [
+                {x: current.x + 1, y: current.y},  // 右
+                {x: current.x - 1, y: current.y},  // 左
+                {x: current.x, y: current.y + 1},  // 下
+                {x: current.x, y: current.y - 1}   // 上
+            ];
+            
+            for (const neighbor of neighbors) {
+                const neighborKey = posToKey(neighbor);
+                
+                // 跳过已经检查过的节点
+                if (closedSet.has(neighborKey)) continue;
+                
+                // 检查是否可以移动到这个格子
+                if (!this.isValidMove(neighbor.x, neighbor.y, unit)) continue;
+                
+                // 计算从起点经过当前节点到邻居节点的距离
+                const tentativeG = gScore.get(currentKey) + 1;
+                
+                if (!openSet.has(neighborKey)) {
+                    openSet.add(neighborKey);
+                } else if (tentativeG >= gScore.get(neighborKey)) {
+                    continue;
                 }
+                
+                // 这条路径更好，记录下来
+                cameFrom.set(neighborKey, currentKey);
+                gScore.set(neighborKey, tentativeG);
+                fScore.set(neighborKey, tentativeG + this.heuristic(neighbor, targetPos));
             }
         }
         
-        // 如果距离目标基地较近或者预定路线被阻挡，使用智能寻路
-        // 计算当前位置到目标的距离
-        const currentDist = Math.sqrt(
-            Math.pow(targetPos.x - currentPos.x, 2) + 
-            Math.pow(targetPos.y - currentPos.y, 2)
-        );
-
-        // 检查所有可能的移动方向
-        const possibleMoves = [];
-
-        // 检查水平移动
-        const dx = Math.sign(targetPos.x - currentPos.x);
-        if (dx !== 0) {
-            const newX = currentPos.x + dx;
-            if (this.isValidMove(newX, currentPos.y, unit)) {
-                const dist = Math.sqrt(
-                    Math.pow(targetPos.x - newX, 2) + 
-                    Math.pow(targetPos.y - currentPos.y, 2)
-                );
-                possibleMoves.push({
-                    x: newX,
-                    y: currentPos.y,
-                    dist: dist,
-                    direction: 'horizontal'
-                });
-            }
+        // 没有找到路径
+        return null;
+    }
+    
+    // 启发式函数：曼哈顿距离
+    heuristic(pos, target) {
+        return Math.abs(pos.x - target.x) + Math.abs(pos.y - target.y);
+    }
+    
+    // 重建路径
+    reconstructPath(cameFrom, currentKey) {
+        const path = [currentKey];
+        while (cameFrom.has(currentKey)) {
+            currentKey = cameFrom.get(currentKey);
+            path.unshift(currentKey);
         }
-
-        // 检查垂直移动
-        const upY = currentPos.y - 1;
-        const downY = currentPos.y + 1;
-
-        // 检查向上移动
-        if (upY >= 0 && this.isValidMove(currentPos.x, upY, unit)) {
-            const dist = Math.sqrt(
-                Math.pow(targetPos.x - currentPos.x, 2) + 
-                Math.pow(targetPos.y - upY, 2)
-            );
-            possibleMoves.push({
-                x: currentPos.x,
-                y: upY,
-                dist: dist,
-                direction: 'up'
-            });
-        }
-
-        // 检查向下移动
-        if (downY < this.height && this.isValidMove(currentPos.x, downY, unit)) {
-            const dist = Math.sqrt(
-                Math.pow(targetPos.x - currentPos.x, 2) + 
-                Math.pow(targetPos.y - downY, 2)
-            );
-            possibleMoves.push({
-                x: currentPos.x,
-                y: downY,
-                dist: dist,
-                direction: 'down'
-            });
-        }
-
-        // 从所有可能的移动中选择最佳移动
-        if (possibleMoves.length > 0) {
-            // 按照到目标的距离排序
-            possibleMoves.sort((a, b) => a.dist - b.dist);
-            
-            // 选择能让单位更接近目标的移动
-            const bestMove = possibleMoves.find(move => move.dist < currentDist);
-            
-            if (bestMove) {
-                // 执行动
-                this.grid[currentPos.y][currentPos.x] = null;
-                this.grid[bestMove.y][bestMove.x] = unit;
-                pathInfo.lastMoveDirection = bestMove.direction;
-                return;
-            }
-        }
-
-        // 如果没有找到更好的移动，尝试寻找新的路线
-        const newTargetY = this.findAlternativePath(currentPos, unit.side, targetPos);
-        if (newTargetY !== null) {
-            pathInfo.targetY = newTargetY;
-            pathInfo.lastMoveDirection = null;
-            this.unitPaths.set(unit, pathInfo);
-        }
+        return path.map(key => {
+            const [x, y] = key.split(',').map(Number);
+            return {x, y};
+        });
     }
 
-    // 修改寻找替代路线的方法，考虑目标位置
-    findAlternativePath(currentPos, side, targetPos) {
-        const checkRange = 3;
-        const possiblePaths = [];
-
-        // 获取当前单位
-        const unit = this.grid[currentPos.y][currentPos.x];
-        if (!unit) {
-            console.error('No unit found at current position');
-            return null;
+    // 修改移动逻辑，使用 A* 寻路
+    moveTowardsTarget(unit, currentPos, targetPos) {
+        // 寻找路径
+        const path = this.findPath(currentPos, targetPos, unit);
+        
+        if (path && path.length > 1) {
+            // 移动到路径的下一个位置
+            const nextPos = path[1];  // path[0] 是当前位置
+            
+            // 执行移动
+            this.grid[currentPos.y][currentPos.x] = null;
+            this.grid[nextPos.y][nextPos.x] = unit;
+            
+            console.log(`${unit.type} moved from (${currentPos.x},${currentPos.y}) to (${nextPos.x},${nextPos.y})`);
         }
-
-        for (let offset = 1; offset <= checkRange; offset++) {
-            // 检查上方
-            const upY = currentPos.y - offset;
-            if (upY >= 0 && this.isValidMove(currentPos.x, upY, unit)) {
-                const dist = Math.sqrt(Math.pow(targetPos.x - currentPos.x, 2) + Math.pow(targetPos.y - upY, 2));
-                possiblePaths.push({ y: upY, dist: dist });
-            }
-
-            // 检查下方
-            const downY = currentPos.y + offset;
-            if (downY < this.height && this.isValidMove(currentPos.x, downY, unit)) {
-                const dist = Math.sqrt(Math.pow(targetPos.x - currentPos.x, 2) + Math.pow(targetPos.y - downY, 2));
-                possiblePaths.push({ y: downY, dist: dist });
-            }
-        }
-
-        // 如果找到可能的路径，选择最接近目标的路径
-        if (possiblePaths.length > 0) {
-            possiblePaths.sort((a, b) => a.dist - b.dist);
-            return possiblePaths[0].y;
-        }
-
-        return null;
     }
 
     isValidMove(x, y, unit) {
