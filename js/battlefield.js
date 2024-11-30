@@ -759,6 +759,101 @@ class Battlefield {
     async waitForLoad() {
         await this.loadingPromise;
     }
+
+    draw() {
+        // 清空画布
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // 使用 TerrainManager 绘制地形
+        this.terrainManager.draw(this.ctx, this.cellSize);
+        
+        // 绘制单位
+        this.drawUnits();
+        
+        // 绘制效果
+        this.drawAttackEffects();
+        this.drawHealEffects();
+    }
+
+    drawUnits() {
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
+                const unit = this.grid[y][x];
+                if (unit) {
+                    this.drawUnit(unit, x, y);
+                }
+            }
+        }
+    }
+
+    drawUnit(unit, x, y) {
+        const centerX = x * this.cellSize;
+        const centerY = y * this.cellSize;
+        
+        // 检查是否有对应的图片
+        const imageKey = this.typeToImage[unit.type];
+        const image = this.unitImages[imageKey];
+        
+        if (image && image.complete && image.naturalHeight !== 0) {
+            // 图片加载成功，绘制图片
+            this.ctx.save();
+            
+            // 如果是右方单位，使用蓝色色调
+            if (unit.side === 'right') {
+                this.ctx.filter = 'hue-rotate(240deg)';  // 转为蓝色
+            }
+            
+            // 所有单位使用相同大小
+            this.ctx.drawImage(
+                image,
+                centerX,
+                centerY,
+                this.cellSize,
+                this.cellSize
+            );
+            
+            // 绘制血条
+            this.drawHealthBar(
+                centerX,
+                centerY - 5,
+                this.cellSize,
+                unit
+            );
+            
+            this.ctx.restore();
+        } else {
+            // 使用备用显示
+            const radius = this.cellSize * 0.4;
+            this.ctx.beginPath();
+            this.ctx.arc(
+                centerX + this.cellSize/2,
+                centerY + this.cellSize/2,
+                radius,
+                0,
+                Math.PI * 2
+            );
+            this.ctx.fillStyle = unit.side === 'left' ? 'red' : 'blue';
+            this.ctx.fill();
+            
+            // 绘制单位类型文字
+            this.ctx.fillStyle = 'white';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(
+                unit.type[0],
+                centerX + this.cellSize/2,
+                centerY + this.cellSize/2
+            );
+            
+            // 绘制血条
+            this.drawHealthBar(
+                centerX,
+                centerY - 5,
+                this.cellSize,
+                unit
+            );
+        }
+    }
 }
 
 // 在文件末尾添加导出
