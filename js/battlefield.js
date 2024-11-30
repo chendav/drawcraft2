@@ -127,7 +127,12 @@ class Battlefield {
         // 如果是基地，使用固定位置
         if (unit.type === "基地") {
             const basePos = side === 'left' ? this.leftBasePos : this.rightBasePos;
+            if (this.grid[basePos.y][basePos.x]) {
+                console.error('Base position already occupied');
+                return false;
+            }
             this.grid[basePos.y][basePos.x] = unit;
+            console.log(`Placed ${side} base at (${basePos.x}, ${basePos.y})`);
             return true;
         }
 
@@ -199,13 +204,8 @@ class Battlefield {
     }
 
     getBase(side) {
-        // 返回指定方的基
-        if (side === 'left') {
-            return this.grid[this.leftBasePos.y][this.leftBasePos.x];
-        } else if (side === 'right') {
-            return this.grid[this.rightBasePos.y][this.rightBasePos.x];
-        }
-        return null;
+        const basePos = side === 'left' ? this.leftBasePos : this.rightBasePos;
+        return this.grid[basePos.y][basePos.x];
     }
 
     updateUnits() {
@@ -339,7 +339,7 @@ class Battlefield {
             // 如果目标被消灭
             if (target.hp <= 0) {
                 if (target.type === "基地") {
-                    target.hp = 0;  // ��基地生命值会变成负数
+                    target.hp = 0;  // 基地生命值会变成负数
                     // 不要提前返回，让游戏状态更新逻辑处理游戏结束
                 } else {
                     // 如果是普通单位被消灭，从网格中移除
