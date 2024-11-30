@@ -25,10 +25,6 @@ class Battlefield {
         // 先加载图片和其他资源
         this.loadResources();
         
-        // 自动生成双方基地
-        this.placeUnit(new Unit("基地", "left"), "left");
-        this.placeUnit(new Unit("基地", "right"), "right");
-        
         // 单位类型到图片的映射
         this.typeToImage = {
             '士兵': 'soldier',
@@ -56,6 +52,10 @@ class Battlefield {
         
         // 添加治疗效果列表
         this.healEffects = [];
+        
+        // 自动生成双方基地
+        this.placeUnit(new Unit("基地", "left"), "left");
+        this.placeUnit(new Unit("基地", "right"), "right");
     }
 
     async loadResources() {
@@ -461,7 +461,7 @@ class Battlefield {
             const bestMove = possibleMoves.find(move => move.dist < currentDist);
             
             if (bestMove) {
-                // 执行移动
+                // 执行��动
                 this.grid[currentPos.y][currentPos.x] = null;
                 this.grid[bestMove.y][bestMove.x] = unit;
                 pathInfo.lastMoveDirection = bestMove.direction;
