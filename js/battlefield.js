@@ -371,7 +371,7 @@ class Battlefield {
             if (target.hp <= 0) {
                 if (target.type === "基地") {
                     target.hp = 0;  // 基地生命值会变成负数
-                    // 不要提前返回，让游戏状态更新逻辑处���游戏结束
+                    // 不要提前返回，让游戏状态更新逻辑处游戏结束
                 } else {
                     // 如果是普通单位被消灭，从网格中移除
                     const targetPos = this.findUnitPosition(target);
@@ -513,6 +513,13 @@ class Battlefield {
     findAlternativePath(currentPos, side, targetPos) {
         const checkRange = 3;
         const possiblePaths = [];
+
+        // 获取当前单位
+        const unit = this.grid[currentPos.y][currentPos.x];
+        if (!unit) {
+            console.error('No unit found at current position');
+            return null;
+        }
 
         for (let offset = 1; offset <= checkRange; offset++) {
             // 检查上方
