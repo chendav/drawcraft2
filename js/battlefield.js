@@ -389,6 +389,8 @@ class Battlefield {
 
     // 添加 A* 寻路算法
     findPath(startPos, targetPos, unit) {
+        console.log(`Finding path for ${unit.type} from (${startPos.x}, ${startPos.y}) to (${targetPos.x}, ${targetPos.y})`);
+        
         const openSet = new Set();
         const closedSet = new Set();
         const cameFrom = new Map();
@@ -407,7 +409,12 @@ class Battlefield {
         gScore.set(startKey, 0);
         fScore.set(startKey, this.heuristic(startPos, targetPos));
         
-        while (openSet.size > 0) {
+        let iterations = 0;
+        const maxIterations = 1000;  // 防止无限循环
+        
+        while (openSet.size > 0 && iterations < maxIterations) {
+            iterations++;
+            
             // 找到 f 值最小的节点
             let currentKey = null;
             let lowestF = Infinity;
@@ -420,9 +427,11 @@ class Battlefield {
             }
             
             const current = keyToPos(currentKey);
+            console.log(`Checking position (${current.x}, ${current.y})`);
             
-            // 如果到达目标
-            if (current.x === targetPos.x && current.y === targetPos.y) {
+            // 如果到达目标附近
+            if (Math.abs(current.x - targetPos.x) <= 1 && Math.abs(current.y - targetPos.y) <= 1) {
+                console.log('Found path to target');
                 return this.reconstructPath(cameFrom, currentKey);
             }
             
@@ -444,7 +453,10 @@ class Battlefield {
                 if (closedSet.has(neighborKey)) continue;
                 
                 // 检查是否可以移动到这个格子
-                if (!this.isValidMove(neighbor.x, neighbor.y, unit)) continue;
+                if (!this.isValidMove(neighbor.x, neighbor.y, unit)) {
+                    console.log(`Cannot move to (${neighbor.x}, ${neighbor.y})`);
+                    continue;
+                }
                 
                 // 计算从起点经过当前节点到邻居节点的距离
                 const tentativeG = gScore.get(currentKey) + 1;
@@ -462,7 +474,7 @@ class Battlefield {
             }
         }
         
-        // 没有找到路径
+        console.log('No path found');
         return null;
     }
     
