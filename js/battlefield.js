@@ -22,6 +22,33 @@ class Battlefield {
         this.leftBasePos = {x: 0, y: Math.floor(this.height/2)};
         this.rightBasePos = {x: this.width-1, y: Math.floor(this.height/2)};
         
+        // 创建基地单位（直接定义属性）
+        const leftBase = {
+            type: "基地",
+            side: "left",
+            hp: 10000,
+            maxHp: 10000,
+            attack: 10,
+            speed: 0,
+            range: 4,
+            attack_speed: 1
+        };
+        
+        const rightBase = {
+            type: "基地",
+            side: "right",
+            hp: 10000,
+            maxHp: 10000,
+            attack: 10,
+            speed: 0,
+            range: 4,
+            attack_speed: 1
+        };
+        
+        // 放置基地
+        this.grid[this.leftBasePos.y][this.leftBasePos.x] = leftBase;
+        this.grid[this.rightBasePos.y][this.rightBasePos.x] = rightBase;
+        
         // 先加载图片和其他资源
         this.loadResources();
         
@@ -52,10 +79,6 @@ class Battlefield {
         
         // 添加治疗效果列表
         this.healEffects = [];
-        
-        // 自动生成双方基地
-        this.placeUnit(new Unit("基地", "left"), "left");
-        this.placeUnit(new Unit("基地", "right"), "right");
     }
 
     async loadResources() {
@@ -461,7 +484,7 @@ class Battlefield {
             const bestMove = possibleMoves.find(move => move.dist < currentDist);
             
             if (bestMove) {
-                // 执行��动
+                // 执行动
                 this.grid[currentPos.y][currentPos.x] = null;
                 this.grid[bestMove.y][bestMove.x] = unit;
                 pathInfo.lastMoveDirection = bestMove.direction;
