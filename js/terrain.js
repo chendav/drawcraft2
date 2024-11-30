@@ -235,6 +235,25 @@ class TerrainManager {
 
         console.log('Map loaded:', this.grid);
     }
+
+    // 添加单位通行检查方法
+    canUnitPass(unit, x, y) {
+        const terrain = this.grid[y][x];
+        
+        // 如果没有找到地形类型，默认为平原
+        if (!terrain) {
+            return true;
+        }
+        
+        // 使用地形通行规则检查
+        const rule = TERRAIN_MOVEMENT_RULES[terrain];
+        if (!rule) {
+            console.warn(`No movement rule found for terrain: ${terrain}`);
+            return true;
+        }
+        
+        return rule.canPass(unit);
+    }
 }
 
 // 导出所有需要的常量和类

@@ -159,27 +159,27 @@ class Battlefield {
             return true;
         }
 
-        // 其他单位的放置逻辑保持不变
+        // 获取基地位置和起始位置
         const basePos = side === 'left' ? this.leftBasePos : this.rightBasePos;
         const startX = side === 'left' ? basePos.x + 1 : basePos.x - 1;
         
+        console.log(`Attempting to place ${unit.type} for ${side} side at x=${startX}`);
+        
         // 尝试在基地周围放置单位
         const positions = [
-            // 基地同行的位置
-            {x: startX, y: basePos.y},
-            // 基地上方的位置
-            {x: startX, y: basePos.y - 1},
-            // 基地下方的位置
-            {x: startX, y: basePos.y + 1}
+            {x: startX, y: basePos.y},      // 基地同行
+            {x: startX, y: basePos.y - 1},  // 基地上方
+            {x: startX, y: basePos.y + 1}   // 基地下方
         ];
         
-        // 如果初始位置都被占用，继续外扩展
+        // 如果初始位置都被占用，继续外扩
         const maxTries = 10;
         let currentX = startX;
         
         for (let i = 0; i < maxTries; i++) {
             for (const pos of positions) {
                 if (pos.y >= 0 && pos.y < this.height && !this.grid[pos.y][currentX]) {
+                    console.log(`Placing ${unit.type} at (${currentX}, ${pos.y})`);
                     this.grid[pos.y][currentX] = unit;
                     // 随机分配移动路线
                     this.assignMovementPath(unit, pos.y);
@@ -187,19 +187,27 @@ class Battlefield {
                 }
             }
             
-            // 如果当前列都满了，动到下一列
+            // 如果当前列都满了，移动到下一列
             if (side === 'left') {
                 currentX++;  // 左方向右扩展
-                if (currentX >= this.width / 2) break;  // 不超过中线
+                if (currentX >= this.width / 2) {
+                    console.log('Reached middle of map for left side');
+                    break;
+                }
             } else {
                 currentX--;  // 右方向左扩展
-                if (currentX <= this.width / 2) break;  // 不超过中线
+                if (currentX <= this.width / 2) {
+                    console.log('Reached middle of map for right side');
+                    break;
+                }
             }
             
+            console.log(`Moving to next column: ${currentX}`);
             // 更新positions数组中的x坐标
             positions.forEach(pos => pos.x = currentX);
         }
         
+        console.log(`Failed to place ${unit.type} for ${side} side`);
         return false;  // 如果所有可用位置都被占用，返回失败
     }
 
@@ -363,7 +371,7 @@ class Battlefield {
             if (target.hp <= 0) {
                 if (target.type === "基地") {
                     target.hp = 0;  // 基地生命值会变成负数
-                    // 不要提前返回，让游戏状态更新逻辑处理游戏结束
+                    // 不要提前返回，让游戏状态更新逻辑处���游戏结束
                 } else {
                     // 如果是普通单位被消灭，从网格中移除
                     const targetPos = this.findUnitPosition(target);
@@ -396,7 +404,7 @@ class Battlefield {
                 // 需要先调整Y坐标到指定路线
                 const dy = Math.sign(pathInfo.targetY - currentPos.y);
                 const newY = currentPos.y + dy;
-                if (this.isValidMove(currentPos.x, newY)) {
+                if (this.isValidMove(currentPos.x, newY, unit)) {
                     this.grid[currentPos.y][currentPos.x] = null;
                     this.grid[newY][currentPos.x] = unit;
                     return;
@@ -407,7 +415,7 @@ class Battlefield {
             const dx = Math.sign(targetPos.x - currentPos.x);
             if (dx !== 0) {
                 const newX = currentPos.x + dx;
-                if (this.isValidMove(newX, currentPos.y)) {
+                if (this.isValidMove(newX, currentPos.y, unit)) {
                     this.grid[currentPos.y][currentPos.x] = null;
                     this.grid[currentPos.y][newX] = unit;
                     return;
@@ -429,7 +437,7 @@ class Battlefield {
         const dx = Math.sign(targetPos.x - currentPos.x);
         if (dx !== 0) {
             const newX = currentPos.x + dx;
-            if (this.isValidMove(newX, currentPos.y)) {
+            if (this.isValidMove(newX, currentPos.y, unit)) {
                 const dist = Math.sqrt(
                     Math.pow(targetPos.x - newX, 2) + 
                     Math.pow(targetPos.y - currentPos.y, 2)
@@ -448,7 +456,7 @@ class Battlefield {
         const downY = currentPos.y + 1;
 
         // 检查向上移动
-        if (upY >= 0 && this.isValidMove(currentPos.x, upY)) {
+        if (upY >= 0 && this.isValidMove(currentPos.x, upY, unit)) {
             const dist = Math.sqrt(
                 Math.pow(targetPos.x - currentPos.x, 2) + 
                 Math.pow(targetPos.y - upY, 2)
@@ -462,7 +470,7 @@ class Battlefield {
         }
 
         // 检查向下移动
-        if (downY < this.height && this.isValidMove(currentPos.x, downY)) {
+        if (downY < this.height && this.isValidMove(currentPos.x, downY, unit)) {
             const dist = Math.sqrt(
                 Math.pow(targetPos.x - currentPos.x, 2) + 
                 Math.pow(targetPos.y - downY, 2)
@@ -509,14 +517,14 @@ class Battlefield {
         for (let offset = 1; offset <= checkRange; offset++) {
             // 检查上方
             const upY = currentPos.y - offset;
-            if (upY >= 0 && this.isValidMove(currentPos.x, upY)) {
+            if (upY >= 0 && this.isValidMove(currentPos.x, upY, unit)) {
                 const dist = Math.sqrt(Math.pow(targetPos.x - currentPos.x, 2) + Math.pow(targetPos.y - upY, 2));
                 possiblePaths.push({ y: upY, dist: dist });
             }
 
             // 检查下方
             const downY = currentPos.y + offset;
-            if (downY < this.height && this.isValidMove(currentPos.x, downY)) {
+            if (downY < this.height && this.isValidMove(currentPos.x, downY, unit)) {
                 const dist = Math.sqrt(Math.pow(targetPos.x - currentPos.x, 2) + Math.pow(targetPos.y - downY, 2));
                 possiblePaths.push({ y: downY, dist: dist });
             }
@@ -543,6 +551,11 @@ class Battlefield {
         }
         
         // 使用 TerrainManager 检查地形限制
+        if (!unit) {
+            console.warn('No unit provided for terrain check');
+            return true;  // 如果没有提供单位，默认允许移动
+        }
+        
         return this.terrainManager.canUnitPass(unit, x, y);
     }
 
@@ -621,7 +634,7 @@ class Battlefield {
         });
     }
 
-    // 添加新方法：绘制攻击效果
+    // 添加新方法：绘制击效果
     drawAttackEffects() {
         const currentTime = Date.now();
         const effectDuration = 500; // 效果持续500毫秒
