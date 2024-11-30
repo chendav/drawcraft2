@@ -242,6 +242,7 @@ class TerrainManager {
         
         // 如果没有找到地形类型，默认为平原
         if (!terrain) {
+            console.warn(`No terrain found at (${x}, ${y}), defaulting to PLAIN`);
             return true;
         }
         
@@ -252,7 +253,9 @@ class TerrainManager {
             return true;
         }
         
-        return rule.canPass(unit);
+        const canPass = rule.canPass(unit);
+        console.log(`Checking if ${unit.type} can pass ${terrain} at (${x}, ${y}): ${canPass}`);
+        return canPass;
     }
 }
 
