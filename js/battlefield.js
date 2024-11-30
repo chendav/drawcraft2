@@ -506,46 +506,66 @@ class Battlefield {
             return;
         }
         
-        // 优先选择水平移动
+        // 确定移动方向
         const dx = Math.sign(targetPos.x - currentPos.x);
+        const dy = Math.sign(targetPos.y - currentPos.y);
+        
+        // 尝试移动的优先顺序：水平、垂直、对角线
+        let moved = false;
+        
+        // 1. 尝试水平移动
         if (dx !== 0) {
             const newX = currentPos.x + dx;
             if (this.isValidMove(newX, currentPos.y, unit)) {
-                console.log(`Moving ${unit.type} horizontally from (${currentPos.x}, ${currentPos.y}) to (${newX}, ${currentPos.y})`);
-                // 实际执行移动
-                this.grid[currentPos.y][currentPos.x] = null;  // 清除原位置
-                this.grid[currentPos.y][newX] = unit;         // 移动到新位置
+                console.log(`${unit.type} moving horizontally to (${newX}, ${currentPos.y})`);
+                this.grid[currentPos.y][currentPos.x] = null;
+                this.grid[currentPos.y][newX] = unit;
+                moved = true;
                 return;
             }
         }
         
-        // 如果水平移动被阻挡，尝试垂直移动
-        const dy = Math.sign(targetPos.y - currentPos.y);
-        if (dy !== 0) {
+        // 2. 如果水平移动失败，尝试垂直移动
+        if (!moved && dy !== 0) {
             const newY = currentPos.y + dy;
             if (this.isValidMove(currentPos.x, newY, unit)) {
-                console.log(`Moving ${unit.type} vertically from (${currentPos.x}, ${currentPos.y}) to (${currentPos.x}, ${newY})`);
-                // 实际执行移动
-                this.grid[currentPos.y][currentPos.x] = null;  // 清除原位置
-                this.grid[newY][currentPos.x] = unit;         // 移动到新位置
+                console.log(`${unit.type} moving vertically to (${currentPos.x}, ${newY})`);
+                this.grid[currentPos.y][currentPos.x] = null;
+                this.grid[newY][currentPos.x] = unit;
+                moved = true;
                 return;
             }
         }
         
-        // 如果直接移动被阻挡，尝试对角线移动
-        if (dx !== 0 && dy !== 0) {
-            const newX = currentPos.x + dx;
-            const newY = currentPos.y + dy;
-            if (this.isValidMove(newX, newY, unit)) {
-                console.log(`Moving ${unit.type} diagonally from (${currentPos.x}, ${currentPos.y}) to (${newX}, ${newY})`);
-                // 实际执行移动
-                this.grid[currentPos.y][currentPos.x] = null;  // 清除原位置
-                this.grid[newY][newX] = unit;                // 移动到新位置
-                return;
+        // 3. 如果直线移动都失败，尝试其他可能的移动方向
+        if (!moved) {
+            const directions = [
+                {dx: 0, dy: -1},  // 上
+                {dx: 0, dy: 1},   // 下
+                {dx: -1, dy: 0},  // 左
+                {dx: 1, dy: 0}    // 右
+            ];
+            
+            // 随机打乱移动方向，避免单位总是走相同的路线
+            directions.sort(() => Math.random() - 0.5);
+            
+            for (const dir of directions) {
+                const newX = currentPos.x + dir.dx;
+                const newY = currentPos.y + dir.dy;
+                
+                if (this.isValidMove(newX, newY, unit)) {
+                    console.log(`${unit.type} moving to (${newX}, ${newY})`);
+                    this.grid[currentPos.y][currentPos.x] = null;
+                    this.grid[newY][newX] = unit;
+                    moved = true;
+                    break;
+                }
             }
         }
         
-        console.log(`${unit.type} at (${currentPos.x}, ${currentPos.y}) is blocked`);
+        if (!moved) {
+            console.log(`${unit.type} at (${currentPos.x}, ${currentPos.y}) is blocked`);
+        }
     }
 
     isValidMove(x, y, unit) {
