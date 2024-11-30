@@ -1,3 +1,4 @@
+import { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS } from './unit.js';
 import { 
     TerrainManager, 
     TERRAIN_TYPES,
@@ -5,7 +6,6 @@ import {
     TERRAIN_GENERATION,
     TERRAIN_MOVEMENT_RULES 
 } from './terrain.js';
-import { Unit, UNIT_STATS, UNIT_COUNTERS, COUNTER_BONUS } from './unit.js';
 
 class Battlefield {
     constructor(canvasId) {
@@ -22,11 +22,46 @@ class Battlefield {
         this.leftBasePos = {x: 0, y: Math.floor(this.height/2)};
         this.rightBasePos = {x: this.width-1, y: Math.floor(this.height/2)};
         
-        // 确保 UNIT_STATS 已经导入
-        console.log('Checking UNIT_STATS:', UNIT_STATS);
+        // 先加载图片和其他资源
+        this.loadResources();
         
-        this.initializeBases();
+        // 最后再初始化基地
+        if (UNIT_STATS && UNIT_STATS["基地"]) {
+            this.initializeBases();
+        } else {
+            throw new Error('Cannot initialize bases: UNIT_STATS not loaded');
+        }
         
+        // 单位类型到图片的映射
+        this.typeToImage = {
+            '士兵': 'soldier',
+            '坦克': 'tank',
+            '飞机': 'plane',
+            '大炮': 'cannon',
+            '哥斯拉': 'godzilla',
+            '基地': 'base',
+            '防御墙': 'wall',
+            'UFO': 'ufo',
+            '骑兵': 'cavalry',
+            '医疗兵': 'medic',
+            '高达': 'gundam'
+        };
+        
+        // 为每个单位添加独立的移动时间记录
+        this.unitLastMoveTime = new Map();
+        this.baseInterval = 2000;  // 基础移动间隔（2秒）
+        
+        // 添加单位移动路线的记录
+        this.unitPaths = new Map();  // 记录每个单位的移动路线
+        
+        // 添加攻击效果列表
+        this.attackEffects = [];
+        
+        // 添加治疗效果列表
+        this.healEffects = [];
+    }
+
+    async loadResources() {
         // 加载单位图片
         this.unitImages = {
             'soldier': new Image(),
@@ -86,34 +121,6 @@ class Battlefield {
             console.log(`Setting src for ${key}:`, img.src);
         });
 
-        // 单位类型到图片的映射
-        this.typeToImage = {
-            '士兵': 'soldier',
-            '坦克': 'tank',
-            '飞机': 'plane',
-            '大炮': 'cannon',
-            '哥斯拉': 'godzilla',
-            '基地': 'base',
-            '防御墙': 'wall',
-            'UFO': 'ufo',
-            '骑兵': 'cavalry',
-            '医疗兵': 'medic',
-            '高达': 'gundam'
-        };
-        
-        // 为每个单位添加独立的移动时间记录
-        this.unitLastMoveTime = new Map();
-        this.baseInterval = 2000;  // 基础移动间隔（2秒）
-        
-        // 添加单位移动路线的记录
-        this.unitPaths = new Map();  // 记录每个单位的移动路线
-        
-        // 添加攻击效果列表
-        this.attackEffects = [];
-        
-        // 添加治疗效果列表
-        this.healEffects = [];
-        
         // 使用 TerrainManager 替代原有的地形管理
         this.terrainManager = new TerrainManager(this.width, this.height);
         this.terrainManager.loadPresetMap('map1');
