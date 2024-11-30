@@ -511,9 +511,10 @@ class Battlefield {
         if (dx !== 0) {
             const newX = currentPos.x + dx;
             if (this.isValidMove(newX, currentPos.y, unit)) {
-                console.log(`Moving horizontally to (${newX}, ${currentPos.y})`);
-                this.grid[currentPos.y][currentPos.x] = null;
-                this.grid[currentPos.y][newX] = unit;
+                console.log(`Moving ${unit.type} horizontally from (${currentPos.x}, ${currentPos.y}) to (${newX}, ${currentPos.y})`);
+                // 实际执行移动
+                this.grid[currentPos.y][currentPos.x] = null;  // 清除原位置
+                this.grid[currentPos.y][newX] = unit;         // 移动到新位置
                 return;
             }
         }
@@ -523,39 +524,28 @@ class Battlefield {
         if (dy !== 0) {
             const newY = currentPos.y + dy;
             if (this.isValidMove(currentPos.x, newY, unit)) {
-                console.log(`Moving vertically to (${currentPos.x}, ${newY})`);
-                this.grid[currentPos.y][currentPos.x] = null;
-                this.grid[newY][currentPos.x] = unit;
+                console.log(`Moving ${unit.type} vertically from (${currentPos.x}, ${currentPos.y}) to (${currentPos.x}, ${newY})`);
+                // 实际执行移动
+                this.grid[currentPos.y][currentPos.x] = null;  // 清除原位置
+                this.grid[newY][currentPos.x] = unit;         // 移动到新位置
                 return;
             }
         }
         
-        // 如果直接移动被阻挡，尝试绕路
-        const possibleMoves = [
-            {x: currentPos.x, y: currentPos.y - 1}, // 上
-            {x: currentPos.x, y: currentPos.y + 1}, // 下
-            {x: currentPos.x - 1, y: currentPos.y}, // 左
-            {x: currentPos.x + 1, y: currentPos.y}  // 右
-        ];
-        
-        // 按照到目标的距离排序可能的移动
-        possibleMoves.sort((a, b) => {
-            const distA = Math.abs(targetPos.x - a.x) + Math.abs(targetPos.y - a.y);
-            const distB = Math.abs(targetPos.x - b.x) + Math.abs(targetPos.y - b.y);
-            return distA - distB;
-        });
-        
-        // 尝试移动到最佳位置
-        for (const move of possibleMoves) {
-            if (this.isValidMove(move.x, move.y, unit)) {
-                console.log(`Found alternative move to (${move.x}, ${move.y})`);
-                this.grid[currentPos.y][currentPos.x] = null;
-                this.grid[move.y][move.x] = unit;
+        // 如果直接移动被阻挡，尝试对角线移动
+        if (dx !== 0 && dy !== 0) {
+            const newX = currentPos.x + dx;
+            const newY = currentPos.y + dy;
+            if (this.isValidMove(newX, newY, unit)) {
+                console.log(`Moving ${unit.type} diagonally from (${currentPos.x}, ${currentPos.y}) to (${newX}, ${newY})`);
+                // 实际执行移动
+                this.grid[currentPos.y][currentPos.x] = null;  // 清除原位置
+                this.grid[newY][newX] = unit;                // 移动到新位置
                 return;
             }
         }
         
-        console.log('No valid moves found');
+        console.log(`${unit.type} at (${currentPos.x}, ${currentPos.y}) is blocked`);
     }
 
     isValidMove(x, y, unit) {
