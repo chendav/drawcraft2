@@ -25,12 +25,9 @@ class Battlefield {
         // 先加载图片和其他资源
         this.loadResources();
         
-        // 最后再初始化基地
-        if (UNIT_STATS && UNIT_STATS["基地"]) {
-            this.initializeBases();
-        } else {
-            throw new Error('Cannot initialize bases: UNIT_STATS not loaded');
-        }
+        // 自动生成双方基地
+        this.placeUnit(new Unit("基地", "left"), "left");
+        this.placeUnit(new Unit("基地", "right"), "right");
         
         // 单位类型到图片的映射
         this.typeToImage = {
@@ -126,193 +123,17 @@ class Battlefield {
         this.terrainManager.loadPresetMap('map1');
     }
 
-    initializeBases() {
-        // 创建基地单位前先检查 UNIT_STATS
-        if (!UNIT_STATS || !UNIT_STATS["基地"]) {
-            console.error('UNIT_STATS not properly loaded:', UNIT_STATS);
-            return;
-        }
-
-        // 创建基地单位
-        const leftBase = new Unit("基地", "left");
-        const rightBase = new Unit("基地", "right");
-        
-        console.log('Initializing bases:', {
-            leftBase: leftBase,
-            rightBase: rightBase,
-            type: leftBase.type,
-            mapping: this.typeToImage["基地"],
-            stats: UNIT_STATS["基地"]
-        });
-        
-        // 放置基地
-        this.grid[this.leftBasePos.y][this.leftBasePos.x] = leftBase;
-        this.grid[this.rightBasePos.y][this.rightBasePos.x] = rightBase;
-    }
-
-    draw() {
-        // 清空画布
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // 使用 TerrainManager 绘制地形
-        this.terrainManager.draw(this.ctx, this.cellSize);
-        
-        // 绘制单位
-        this.drawUnits();
-        
-        // 绘制效果
-        this.drawAttackEffects();
-        this.drawHealEffects();
-    }
-
-    drawUnits() {
-        for (let y = 0; y < this.height; y++) {
-            for (let x = 0; x < this.width; x++) {
-                const unit = this.grid[y][x];
-                if (unit) {
-                    this.drawUnit(unit, x, y);
-                }
-            }
-        }
-    }
-
-    drawUnit(unit, x, y) {
-        const centerX = x * this.cellSize;
-        const centerY = y * this.cellSize;
-        
-        // 检查是否有对应的图片
-        const imageKey = this.typeToImage[unit.type];
-        console.log('Drawing unit:', {
-            type: unit.type,
-            imageKey: imageKey,
-            mappings: this.typeToImage,
-            images: Object.keys(this.unitImages)
-        });
-        
-        if (!imageKey) {
-            console.error(`No image mapping found for unit type: ${unit.type}`);
-            return;
-        }
-        
-        const image = this.unitImages[imageKey];
-        if (!image) {
-            console.error(`No image object found for key: ${imageKey}`);
-            return;
-        }
-        
-        if (!this.isImagesLoaded()) {
-            console.log(`Waiting for images to load... (${this.loadedImages}/${this.totalImages})`);
-        }
-        
-        console.log(`Drawing unit: ${unit.type}, image key: ${imageKey}, image loaded: ${image.complete}`);
-        
-        if (image && image.complete && image.naturalHeight !== 0) {
-            // 图片加载成功，绘制图片
-            this.ctx.save();
-            
-            // 如果是右方单位，使用蓝色调
-            if (unit.side === 'right') {
-                this.ctx.filter = 'hue-rotate(240deg)';  // 转为蓝色
-            }
-            
-            // 所有单位（包括基地）使用相同大小
-            this.ctx.drawImage(
-                image,
-                centerX,
-                centerY,
-                this.cellSize,
-                this.cellSize
-            );
-            
-            // 绘制血条（在单位上方）
-            this.drawHealthBar(
-                centerX,
-                centerY - 5,
-                this.cellSize,
-                unit
-            );
-            
-            this.ctx.restore();
-        } else {
-            console.warn(`Image not ready for unit type: ${unit.type}, key: ${imageKey}, src: ${image.src}`);
-            // 图片未加载或加载失败，使用备用显示
-            const radius = this.cellSize * 0.4;
-            this.ctx.beginPath();
-            this.ctx.arc(
-                centerX + this.cellSize/2,
-                centerY + this.cellSize/2,
-                radius,
-                0,
-                Math.PI * 2
-            );
-            this.ctx.fillStyle = unit.side === 'left' ? 'red' : 'blue';
-            this.ctx.fill();
-            
-            // 绘制单位类型文字
-            this.ctx.fillStyle = 'white';
-            this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'middle';
-            this.ctx.fillText(
-                unit.type[0],
-                centerX + this.cellSize/2,
-                centerY + this.cellSize/2
-            );
-            
-            // 绘制血条
-            this.drawHealthBar(
-                centerX,
-                centerY - 5,
-                this.cellSize,
-                unit
-            );
-            console.warn(`Image not ready for unit type: ${unit.type}, using fallback display`);
-        }
-    }
-
-    // 添加新方法：绘制血条
-    drawHealthBar(x, y, width, unit) {
-        const height = 4;  // 血条高度
-        const padding = 1;  // 血条边框padding
-        
-        // 绘制血条背景（黑色边框）
-        this.ctx.fillStyle = 'black';
-        this.ctx.fillRect(x, y, width, height);
-        
-        // 绘制血条底色（红色）
-        this.ctx.fillStyle = 'red';
-        this.ctx.fillRect(x + padding, y + padding, width - padding * 2, height - padding * 2);
-        
-        // 计算当前生命值比例
-        const healthRatio = unit.hp / unit.maxHp;
-        
-        // 绘制当前生命值（绿色）
-        this.ctx.fillStyle = this.getHealthColor(healthRatio);
-        this.ctx.fillRect(
-            x + padding,
-            y + padding,
-            (width - padding * 2) * healthRatio,
-            height - padding * 2
-        );
-    }
-
-    // 添加新方法：根据生命值比例获取颜色
-    getHealthColor(ratio) {
-        if (ratio > 0.5) {
-            // 血量大于50%时显示绿色
-            return '#00ff00';
-        } else if (ratio > 0.25) {
-            // 血量大于25%时显示黄色
-            return '#ffff00';
-        } else {
-            // 血量低于25%时显示红色
-            return '#ff0000';
-        }
-    }
-
     placeUnit(unit, side) {
-        // 根据基地位置确定生成位置
+        // 如果是基地，使用固定位置
+        if (unit.type === "基地") {
+            const basePos = side === 'left' ? this.leftBasePos : this.rightBasePos;
+            this.grid[basePos.y][basePos.x] = unit;
+            return true;
+        }
+
+        // 其他单位的放置逻辑保持不变
         const basePos = side === 'left' ? this.leftBasePos : this.rightBasePos;
-        const startX = side === 'left' ? basePos.x + 1 : basePos.x - 1;  // 在基地旁边一格
+        const startX = side === 'left' ? basePos.x + 1 : basePos.x - 1;
         
         // 尝试在基地周围放置单位
         const positions = [
@@ -518,7 +339,7 @@ class Battlefield {
             // 如果目标被消灭
             if (target.hp <= 0) {
                 if (target.type === "基地") {
-                    target.hp = 0;  // 确基地生命值会变成负数
+                    target.hp = 0;  // ��基地生命值会变成负数
                     // 不要提前返回，让游戏状态更新逻辑处理游戏结束
                 } else {
                     // 如果是普通单位被消灭，从网格中移除
