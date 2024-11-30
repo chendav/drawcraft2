@@ -111,52 +111,28 @@ class TerrainManager {
     }
 
     draw(ctx, cellSize) {
-        // 绘制每一层地形
-        Object.entries(TERRAIN_TYPES).forEach(([_, type]) => {
-            const layer = this.terrainLayers[type];
-            if (layer.complete) {
-                ctx.save();  // 保存当前状态
+        // 直接绘制每个格子的地形
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
+                const terrain = this.grid[y][x];
+                const layer = this.terrainLayers[terrain];
                 
-                // 设置整个图层为完全透明
-                ctx.globalAlpha = 0;  // 100%透明
-                
-                // 绘制整个地形层
-                ctx.drawImage(layer, 0, 0, this.width * cellSize, this.height * cellSize);
-                
-                // 恢复完全不透明，只绘制对应地形的格子
-                ctx.globalAlpha = 1.0;
-                for (let y = 0; y < this.height; y++) {
-                    for (let x = 0; x < this.width; x++) {
-                        if (this.grid[y][x] === type) {
-                            // 只绘制这个格子的部分
-                            ctx.drawImage(
-                                layer,
-                                x * cellSize,     // 源图像x
-                                y * cellSize,     // 源图像y
-                                cellSize,         // 源图像宽度
-                                cellSize,         // 源图像高度
-                                x * cellSize,     // 目标x
-                                y * cellSize,     // 目标y
-                                cellSize,         // 目标宽度
-                                cellSize          // 目标高度
-                            );
-                        }
-                    }
-                }
-                
-                ctx.restore();  // 恢复之前的状态
-            } else if (this.useFallbackColors) {
-                // 如果图片未加载，使用备用颜色
-                for (let y = 0; y < this.height; y++) {
-                    for (let x = 0; x < this.width; x++) {
-                        if (this.grid[y][x] === type) {
-                            ctx.fillStyle = this.getFallbackColor(type);
-                            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-                        }
-                    }
+                if (layer && layer.complete) {
+                    // 直接绘制地形图片
+                    ctx.drawImage(
+                        layer,
+                        x * cellSize,
+                        y * cellSize,
+                        cellSize,
+                        cellSize
+                    );
+                } else {
+                    // 如果图片未加载，使用备用颜色
+                    ctx.fillStyle = this.getFallbackColor(terrain);
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
                 }
             }
-        });
+        }
     }
 
     // 添加备用颜色方法
