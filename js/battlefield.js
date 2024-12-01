@@ -956,7 +956,7 @@ class Battlefield {
     handleCanvasClick(event) {
         if (!this.pendingUnit) return;
         
-        // 获取点击位置对应的格子坐标
+        // 获���点击位置对应的格子坐标
         const rect = this.canvas.getBoundingClientRect();
         const x = Math.floor((event.clientX - rect.left) / this.cellSize);
         const y = Math.floor((event.clientY - rect.top) / this.cellSize);
@@ -970,6 +970,10 @@ class Battlefield {
             // 放置单位
             this.grid[y][x] = this.pendingUnit;
             console.log(`Placed ${this.pendingUnit.type} at (${x}, ${y})`);
+            
+            // 隐藏预览
+            const preview = document.getElementById(`${this.pendingUnitSide}Preview`);
+            preview.style.display = 'none';
             
             // 清除待放置状态
             this.pendingUnit = null;
