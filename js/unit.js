@@ -88,6 +88,30 @@ const UNIT_STATS = {
         attack_range: 3,   // 比哥斯拉多一格攻击范围
         speed: 0.6,        // 比哥斯拉稍快的移动速度
         attack_speed: 1.2  // 比哥斯拉稍快的攻击速度
+    },
+    "弓箭手": {
+        hp: 1500,          // 生命值较低
+        attack: 30,        // 高攻击力
+        move_range: 1,
+        attack_range: 4,   // 远程攻击
+        speed: 1.2,        // 较快移动速度
+        attack_speed: 1
+    },
+    "长矛兵": {
+        hp: 2200,          // 中等生命值
+        attack: 25,        // 中等攻击力
+        move_range: 1,
+        attack_range: 2,   // 中等攻击范围
+        speed: 0.8,        // 较慢移动速度
+        attack_speed: 1.2
+    },
+    "剑士": {
+        hp: 2500,          // 较高生命值
+        attack: 35,        // 高攻击力
+        move_range: 1,
+        attack_range: 1,   // 近战
+        speed: 1,          // 标准移动速度
+        attack_speed: 1.5  // 较快攻击速度
     }
 };
 
@@ -101,7 +125,10 @@ const UNIT_COUNTERS = {
     "UFO": [],
     "骑兵": ["大炮", "士兵"],
     "医疗兵": [],
-    "高达": ["UFO"]
+    "高达": ["UFO"],
+    "弓箭手": ["骑兵", "飞机"],      // 弓箭手克制骑兵和飞机
+    "长矛兵": ["骑兵", "坦克"],      // 长矛兵克制骑兵和坦克
+    "剑士": ["士兵", "长矛兵"]       // 剑士克制士兵和长矛兵
 };
 
 const COUNTER_BONUS = 1.5;

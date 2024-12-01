@@ -64,7 +64,10 @@ class Battlefield {
             'UFO': 'ufo',
             '骑兵': 'cavalry',
             '医疗兵': 'medic',
-            '高达': 'gundam'
+            '高达': 'gundam',
+            '弓箭手': 'archer',
+            '长矛兵': 'spearman',
+            '剑士': 'swordsman'
         };
         
         // 为每个单位添加独立的移动时间记录
@@ -94,7 +97,10 @@ class Battlefield {
             'ufo': new Image(),
             'cavalry': new Image(),
             'medic': new Image(),
-            'gundam': new Image()
+            'gundam': new Image(),
+            'archer': new Image(),
+            'spearman': new Image(),
+            'swordsman': new Image()
         };
 
         // 返回一个 Promise，在所有图片加载完成后解析
@@ -135,6 +141,9 @@ class Battlefield {
         this.unitImages.cavalry.src = 'assets/units/cavalry.png';
         this.unitImages.medic.src = 'assets/units/medic.png';
         this.unitImages.gundam.src = 'assets/units/gundam.png';
+        this.unitImages.archer.src = 'assets/units/archer.png';
+        this.unitImages.spearman.src = 'assets/units/spearman.png';
+        this.unitImages.swordsman.src = 'assets/units/swordsman.png';
 
         console.log('Attempting to load unit images...');
         Object.entries(this.unitImages).forEach(([key, img]) => {
@@ -540,7 +549,7 @@ class Battlefield {
         // 3. 如果直线移动都失败，尝试其他可能的移动方向
         if (!moved) {
             const directions = [
-                {dx: 0, dy: -1},  // 上
+                {dx: 0, dy: -1},  // ��
                 {dx: 0, dy: 1},   // 下
                 {dx: -1, dy: 0},  // 左
                 {dx: 1, dy: 0}    // 右
