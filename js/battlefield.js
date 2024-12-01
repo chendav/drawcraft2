@@ -82,6 +82,13 @@ class Battlefield {
         
         // 添加治疗效果列表
         this.healEffects = [];
+        
+        // 添加待放置单位的状态
+        this.pendingUnit = null;
+        this.pendingUnitSide = null;
+        
+        // 添加画布点击事件
+        this.canvas.addEventListener('click', this.handleCanvasClick.bind(this));
     }
 
     async loadResources() {
@@ -549,7 +556,7 @@ class Battlefield {
         // 3. 如果直线移动都失败，尝试其他可能的移动方向
         if (!moved) {
             const directions = [
-                {dx: 0, dy: -1},  // ��
+                {dx: 0, dy: -1},  // 
                 {dx: 0, dy: 1},   // 下
                 {dx: -1, dy: 0},  // 左
                 {dx: 1, dy: 0}    // 右
@@ -943,6 +950,39 @@ class Battlefield {
             // 血量低于25%时显示红色
             return '#ff0000';
         }
+    }
+
+    // 添加新方法：处理画布点击
+    handleCanvasClick(event) {
+        if (!this.pendingUnit) return;
+        
+        // 获取点击位置对应的格子坐标
+        const rect = this.canvas.getBoundingClientRect();
+        const x = Math.floor((event.clientX - rect.left) / this.cellSize);
+        const y = Math.floor((event.clientY - rect.top) / this.cellSize);
+        
+        // 获取对应方的基地位置
+        const basePos = this.pendingUnitSide === 'left' ? this.leftBasePos : this.rightBasePos;
+        
+        // 检查是否在基地5格范围内
+        const distance = Math.abs(x - basePos.x) + Math.abs(y - basePos.y);
+        if (distance <= 5 && this.isValidMove(x, y, this.pendingUnit)) {
+            // 放置单位
+            this.grid[y][x] = this.pendingUnit;
+            console.log(`Placed ${this.pendingUnit.type} at (${x}, ${y})`);
+            
+            // 清除待放置状态
+            this.pendingUnit = null;
+            this.pendingUnitSide = null;
+        } else {
+            console.log('Invalid placement position');
+        }
+    }
+
+    // 添加新方法：设置待放置单位
+    setPendingUnit(unit, side) {
+        this.pendingUnit = unit;
+        this.pendingUnitSide = side;
     }
 }
 

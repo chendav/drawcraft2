@@ -230,12 +230,29 @@ class Game {
                 "弓箭手", "长矛兵", "剑士"  // 添加新的单位类型
             ].includes(unitType)) {
                 const unit = new Unit(unitType, side);
-                if (this.battlefield.placeUnit(unit, side)) {
-                    canvas.clear();
-                    console.log(`Created and placed ${unitType} unit on ${side} side`);
-                } else {
-                    console.log(`Failed to place ${unitType} unit on ${side} side`);
-                }
+                
+                // 设置待放置单位，而不是直接放置
+                this.battlefield.setPendingUnit(unit, side);
+                canvas.clear();
+                
+                // 显示单位预览和提示
+                const preview = document.getElementById(`${side}Preview`);
+                const previewImg = preview.querySelector('img');
+                const previewText = preview.querySelector('p');
+                
+                previewImg.src = `assets/units/${this.battlefield.typeToImage[unitType]}.png`;
+                previewText.textContent = `请在基地附近5格范围内点击放置${unitType}`;
+                preview.style.display = 'block';
+                
+                // 30秒后如果还没有放置，就清除待放置状态
+                setTimeout(() => {
+                    if (this.battlefield.pendingUnit === unit) {
+                        this.battlefield.pendingUnit = null;
+                        this.battlefield.pendingUnitSide = null;
+                        preview.style.display = 'none';
+                        alert('放置超时，请重新召唤单位');
+                    }
+                }, 30000);
             } else {
                 console.log(`Invalid unit type: ${unitType}`);
                 alert('无法识别单位类型，请重试');

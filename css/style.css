@@ -80,4 +80,23 @@ body {
     font-size: 16px;
     font-weight: bold;
     color: #333;
+}
+
+.unit-preview {
+    display: none;  /* 默认隐藏 */
+    margin-top: 20px;
+    text-align: center;
+}
+
+.unit-preview img {
+    width: 100px;  /* 稍大的图片尺寸 */
+    height: 100px;
+    margin-bottom: 10px;
+}
+
+.unit-preview p {
+    margin: 0;
+    font-size: 16px;
+    color: #4CAF50;
+    font-weight: bold;
 } 
