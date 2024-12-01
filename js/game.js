@@ -223,8 +223,12 @@ class Game {
             const unitType = result.choices[0].message.content.trim();
             console.log(`${side} canvas result:`, unitType);
             
-            // 直接用 AI 返回的单位类型
-            if (unitType && ["士兵", "坦克", "飞机", "大炮", "哥斯拉", "防御墙", "UFO", "骑兵", "医疗兵", "高达"].includes(unitType)) {
+            // 更新允许的单位类型列表
+            if (unitType && [
+                "士兵", "坦克", "飞机", "大炮", "哥斯拉", 
+                "防御墙", "UFO", "骑兵", "医疗兵", "高达",
+                "弓箭手", "长矛兵", "剑士"  // 添加新的单位类型
+            ].includes(unitType)) {
                 const unit = new Unit(unitType, side);
                 if (this.battlefield.placeUnit(unit, side)) {
                     canvas.clear();
