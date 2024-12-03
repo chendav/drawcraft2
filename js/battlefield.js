@@ -89,6 +89,24 @@ class Battlefield {
         
         // 添加画布点击事件
         this.canvas.addEventListener('click', this.handleCanvasClick.bind(this));
+        
+        // 初始化音效
+        this.sounds = {
+            'soldier': new Audio('assets/sounds/soldier_attack.mp3'),
+            'tank': new Audio('assets/sounds/tank_attack.mp3'),
+            'plane': new Audio('assets/sounds/plane_attack.mp3'),
+            'cannon': new Audio('assets/sounds/cannon_attack.mp3'),
+            'godzilla': new Audio('assets/sounds/godzilla_attack.mp3'),
+            'base': new Audio('assets/sounds/base_attack.mp3'),
+            'wall': new Audio('assets/sounds/wall_attack.mp3'),
+            'ufo': new Audio('assets/sounds/ufo_attack.mp3'),
+            'cavalry': new Audio('assets/sounds/cavalry_attack.mp3'),
+            'medic': new Audio('assets/sounds/heal.mp3'),
+            'gundam': new Audio('assets/sounds/gundam_attack.mp3'),
+            'archer': new Audio('assets/sounds/arrow.mp3'),
+            'spearman': new Audio('assets/sounds/spear.mp3'),
+            'swordsman': new Audio('assets/sounds/sword.mp3')
+        };
     }
 
     async loadResources() {
@@ -358,6 +376,19 @@ class Battlefield {
     }
 
     performAttack(attacker, target) {
+        // 获取攻击者对应的音效
+        const soundKey = this.typeToImage[attacker.type];
+        const sound = this.sounds[soundKey];
+        
+        // 如果有音效且音效已加载，播放音效
+        if (sound && sound.readyState >= 2) {
+            // 重置音效播放位置（允许快速重复播放）
+            sound.currentTime = 0;
+            sound.play().catch(error => {
+                console.warn('Failed to play sound:', error);
+            });
+        }
+
         // 如果是医疗兵且目标是友方单位，进行治疗
         if (attacker.type === "医疗兵" && target.side === attacker.side) {
             // 计算治疗量
@@ -562,7 +593,7 @@ class Battlefield {
                 {dx: 1, dy: 0}    // 右
             ];
             
-            // 随机打乱移动方向，避免单位总是走相同的路线
+            // ���机打乱移动方向，避免单位总是走相同的路线
             directions.sort(() => Math.random() - 0.5);
             
             for (const dir of directions) {
@@ -956,7 +987,7 @@ class Battlefield {
     handleCanvasClick(event) {
         if (!this.pendingUnit) return;
         
-        // 获���点击位置对应的格子坐标
+        // 获点击位置对应的格子坐标
         const rect = this.canvas.getBoundingClientRect();
         const x = Math.floor((event.clientX - rect.left) / this.cellSize);
         const y = Math.floor((event.clientY - rect.top) / this.cellSize);
